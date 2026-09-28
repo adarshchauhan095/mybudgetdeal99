@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /admin/*
+
+Sitemap: https://adarshchauhan095.github.io/mybudgetdeal99/sitemap.xml

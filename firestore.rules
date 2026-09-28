@@ -1,0 +1,79 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        request.auth.token.admin == true
+      );
+    }
+
+    // Public catalog content: Anyone can read active/published items, only Admin can write
+    match /products/{productId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /collections/{collectionId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /deals/{dealId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /homepageSections/{sectionId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /tags/{tagId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Admin user profiles
+    match /admins/{adminId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Audit logs: Only admin can read or write
+    match /auditLogs/{logId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Analytics: Visitors can submit usage events (page view, CTA click), but only Admin can read aggregate events
+    match /analytics/{eventId} {
+      allow create: if request.resource.data.eventType in [
+        'page_view', 'product_view', 'collection_view', 'category_view',
+        'search', 'filter_used', 'product_share', 'amazon_cta_click',
+        'banner_click', 'collection_product_click'
+      ];
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}
