@@ -1,10 +1,22 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter, HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { SiteProvider, useSite } from './context/SiteContext';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { QuickViewModal } from './components/common/QuickViewModal';
+
+// Dynamically determine basename for GitHub Pages and local development
+const getBasename = (): string => {
+  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/mybudgetdeal99')) {
+    return '/mybudgetdeal99';
+  }
+  const base = import.meta.env.BASE_URL;
+  if (base && base !== './' && base !== '/') {
+    return base.replace(/\/$/, '');
+  }
+  return '';
+};
 
 // Public Pages
 import { HomePage } from './pages/HomePage';
@@ -75,7 +87,7 @@ const NotFoundPage: React.FC = () => (
     <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
       The page you requested could not be found or has moved.
     </p>
-    <a href="/" className="btn btn-primary">Return to Homepage</a>
+    <Link to="/" className="btn btn-primary">Return to Homepage</Link>
   </div>
 );
 
@@ -83,7 +95,7 @@ export const App: React.FC = () => {
   return (
     <AuthProvider>
       <SiteProvider>
-        <BrowserRouter>
+        <BrowserRouter basename={getBasename()}>
           <ScrollToTop />
           <Navbar />
           <div className="main-content">
