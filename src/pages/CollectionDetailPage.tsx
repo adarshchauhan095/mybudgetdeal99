@@ -62,7 +62,7 @@ export const CollectionDetailPage: React.FC = () => {
   if (loading) {
     return (
       <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', paddingTop: '1rem' }}>
-        <div className="skeleton skeleton-banner" style={{ height: '300px' }} />
+        <div className="skeleton" style={{ width: '100%', height: '300px', borderRadius: 'var(--radius-xl)' }} />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1.5rem' }}>
           {[1, 2, 3, 4].map(i => (
             <div key={i} className="skeleton-card" style={{ height: '340px' }} />

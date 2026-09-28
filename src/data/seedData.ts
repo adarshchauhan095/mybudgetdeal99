@@ -1,4 +1,4 @@
-import { Product, Collection, Category, Deal, Banner, HomepageSection, SiteSettings } from '../types';
+import { Product, Collection, Category, Deal, HomepageSection, SiteSettings } from '../types';
 
 export const initialSiteSettings: SiteSettings = {
   siteName: "mybudgetdeal99",
@@ -706,64 +706,14 @@ export const initialCollections: Collection[] = [
   }
 ];
 
-export const initialBanners: Banner[] = [
-  {
-    id: "banner-01",
-    title: "Complete Study Table Setup",
-    subtitle: "Everything you need for an organized, ergonomic study space under budget.",
-    desktopImage: "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?auto=format&fit=crop&w=1600&q=80",
-    ctaText: "Explore Full Setup",
-    ctaTarget: "/collection/complete-study-table-setup",
-    linkedType: "collection",
-    linkedSlug: "complete-study-table-setup",
-    priority: 100,
-    isActive: true,
-    displayOrder: 1
-  },
-  {
-    id: "banner-02",
-    title: "Must-Have Car Essentials",
-    subtitle: "Portable vacuums, digital tire pumps & phone mounts curated for road warriors.",
-    desktopImage: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1600&q=80",
-    ctaText: "View Car Kit",
-    ctaTarget: "/collection/car-essentials",
-    linkedType: "collection",
-    linkedSlug: "car-essentials",
-    priority: 90,
-    isActive: true,
-    displayOrder: 2
-  },
-  {
-    id: "banner-03",
-    title: "Verified Amazon Budget Deals",
-    subtitle: "Top tech, office, and home accessories at up to 50% discount.",
-    desktopImage: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1600&q=80",
-    ctaText: "Discover Deals",
-    ctaTarget: "/deals",
-    linkedType: "custom",
-    linkedSlug: "deals",
-    priority: 85,
-    isActive: true,
-    displayOrder: 3
-  }
-];
-
 export const initialHomepageSections: HomepageSection[] = [
-  {
-    id: "sec-hero",
-    sectionType: "hero_banner",
-    title: "Hero Banner Carousel",
-    order: 1,
-    itemLimit: 5,
-    isVisible: true
-  },
   {
     id: "sec-deals",
     sectionType: "featured_deals",
     title: "Today's Featured Deals",
     subtitle: "Hand-picked price drops on trusted Amazon gear",
     contentSource: "deals",
-    order: 2,
+    order: 1,
     itemLimit: 4,
     isVisible: true
   },
@@ -772,7 +722,7 @@ export const initialHomepageSections: HomepageSection[] = [
     sectionType: "curated_collections",
     title: "Curated Shopping Setups",
     subtitle: "Complete matching setups for study tables, offices, and cars",
-    order: 3,
+    order: 2,
     itemLimit: 3,
     isVisible: true
   },
@@ -781,7 +731,7 @@ export const initialHomepageSections: HomepageSection[] = [
     sectionType: "popular_categories",
     title: "Shop By Category",
     subtitle: "Explore our most popular departments",
-    order: 4,
+    order: 3,
     itemLimit: 4,
     isVisible: true
   },
@@ -791,7 +741,7 @@ export const initialHomepageSections: HomepageSection[] = [
     title: "Trending Products",
     subtitle: "Popular items discovered by our community this week",
     contentSource: "trending",
-    order: 5,
+    order: 4,
     itemLimit: 8,
     isVisible: true
   },
@@ -801,7 +751,7 @@ export const initialHomepageSections: HomepageSection[] = [
     title: "Editor's Choice Picks",
     subtitle: "Highest utility products tested and recommended",
     contentSource: "featured",
-    order: 6,
+    order: 5,
     itemLimit: 6,
     isVisible: true
   }

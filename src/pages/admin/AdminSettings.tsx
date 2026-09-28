@@ -195,7 +195,7 @@ export const AdminSettings: React.FC = () => {
           <span>Firestore Cloud Database Sync</span>
         </div>
         <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-          Project: <code>mybudgetdeal99-f5d2a</code>. Click below to push all current local seed products, setups, categories, deals, banners, and settings directly into your remote Firestore cloud collections.
+          Project: <code>mybudgetdeal99-f5d2a</code>. Click below to push all current local seed products, setups, categories, deals, and settings directly into your remote Firestore cloud collections.
         </p>
 
         <button

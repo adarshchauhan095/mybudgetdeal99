@@ -107,28 +107,9 @@ export interface Deal {
   endDate: string;
   status: 'active' | 'upcoming' | 'expired';
   priority: number;
-  bannerUrl?: string;
-}
-
-export interface Banner {
-  id: string;
-  title: string;
-  subtitle: string;
-  desktopImage: string;
-  mobileImage?: string;
-  ctaText: string;
-  ctaTarget: string;
-  linkedType: 'product' | 'collection' | 'category' | 'custom';
-  linkedSlug: string;
-  priority: number;
-  isActive: boolean;
-  displayOrder: number;
-  startDate?: string;
-  endDate?: string;
 }
 
 export type SectionType = 
-  | 'hero_banner'
   | 'featured_deals'
   | 'trending_products'
   | 'popular_categories'
@@ -173,7 +154,7 @@ export interface AuditLog {
   id: string;
   adminEmail: string;
   action: string;
-  entityType: 'product' | 'collection' | 'category' | 'deal' | 'banner' | 'settings';
+  entityType: 'product' | 'collection' | 'category' | 'deal' | 'settings';
   entityId: string;
   entityName: string;
   timestamp: string;
@@ -191,7 +172,6 @@ export interface AnalyticsEvent {
     | 'filter_used'
     | 'product_share'
     | 'amazon_cta_click'
-    | 'banner_click'
     | 'collection_product_click';
   targetId?: string;
   targetSlug?: string;

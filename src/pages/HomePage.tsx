@@ -17,16 +17,13 @@ import {
   getCollections,
   getCategories,
   getDeals,
-  getBanners,
   getHomepageSections
 } from '../services/catalogService';
-import { Product, Collection, Category, Deal, Banner, HomepageSection } from '../types';
+import { Product, Collection, Category, Deal, HomepageSection } from '../types';
 import { SEOHead } from '../components/layout/SEOHead';
-import { BannerCarousel } from '../components/common/BannerCarousel';
 import { ProductCard } from '../components/common/ProductCard';
 import { CollectionCard } from '../components/common/CollectionCard';
 import {
-  BannerSkeleton,
   ProductCardSkeleton,
   CollectionCardSkeleton,
   CategoryGridSkeleton
@@ -34,7 +31,6 @@ import {
 import { trackEvent } from '../services/analyticsService';
 
 export const HomePage: React.FC = () => {
-  const [banners, setBanners] = useState<Banner[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -47,15 +43,13 @@ export const HomePage: React.FC = () => {
 
     async function loadData() {
       try {
-        const [bList, pList, cList, catList, dList, sList] = await Promise.all([
-          getBanners(),
+        const [pList, cList, catList, dList, sList] = await Promise.all([
           getProducts(),
           getCollections(),
           getCategories(),
           getDeals(),
           getHomepageSections()
         ]);
-        setBanners(bList);
         setProducts(pList);
         setCollections(cList);
         setCategories(catList);
@@ -83,19 +77,8 @@ export const HomePage: React.FC = () => {
         canonicalPath="/"
       />
 
-      <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '3.5rem' }}>
+      <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '3.5rem', paddingTop: '1rem' }}>
         
-        {/* Hero Section */}
-        {loading ? (
-          <section style={{ marginTop: '0.5rem' }}>
-            <BannerSkeleton />
-          </section>
-        ) : banners.length > 0 ? (
-          <section style={{ marginTop: '0.5rem' }}>
-            <BannerCarousel banners={banners} />
-          </section>
-        ) : null}
-
         {/* Feature USPs Bar */}
         <section style={{
           display: 'grid',

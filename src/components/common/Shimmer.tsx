@@ -1,20 +1,6 @@
 import React from 'react';
 
 /**
- * Shimmering skeleton placeholder for BannerCarousel
- */
-export const BannerSkeleton: React.FC = () => {
-  return (
-    <div className="skeleton-banner">
-      <div className="skeleton skeleton-badge" style={{ width: '130px', height: '26px' }} />
-      <div className="skeleton skeleton-title" style={{ width: '55%', height: '36px' }} />
-      <div className="skeleton skeleton-text" style={{ width: '40%', height: '18px' }} />
-      <div className="skeleton skeleton-btn" style={{ width: '170px', height: '46px', marginTop: '0.5rem', borderRadius: 'var(--radius-full)' }} />
-    </div>
-  );
-};
-
-/**
  * Shimmering skeleton placeholder for ProductCard
  */
 export const ProductCardSkeleton: React.FC = () => {

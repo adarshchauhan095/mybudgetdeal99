@@ -54,7 +54,6 @@ export const AdminLayout: React.FC = () => {
     { label: 'Curated Setups', path: '/admin/collections', icon: Layers },
     { label: 'Categories', path: '/admin/categories', icon: FolderTree },
     { label: 'Deals Manager', path: '/admin/deals', icon: Zap },
-    { label: 'Banner Carousel', path: '/admin/banners', icon: ImageIcon },
     { label: 'Homepage Builder', path: '/admin/homepage', icon: Sliders },
     { label: 'Analytics', path: '/admin/analytics', icon: BarChart3 },
     { label: 'Affiliate & Settings', path: '/admin/settings', icon: Settings },

@@ -42,7 +42,6 @@ import { AdminProductEdit } from './pages/admin/AdminProductEdit';
 import { AdminCollections } from './pages/admin/AdminCollections';
 import { AdminCategories } from './pages/admin/AdminCategories';
 import { AdminDeals } from './pages/admin/AdminDeals';
-import { AdminBanners } from './pages/admin/AdminBanners';
 import { AdminHomepageBuilder } from './pages/admin/AdminHomepageBuilder';
 import { AdminAnalytics } from './pages/admin/AdminAnalytics';
 import { AdminSettings } from './pages/admin/AdminSettings';
@@ -127,7 +126,6 @@ export const App: React.FC = () => {
                 <Route path="collections" element={<AdminCollections />} />
                 <Route path="categories" element={<AdminCategories />} />
                 <Route path="deals" element={<AdminDeals />} />
-                <Route path="banners" element={<AdminBanners />} />
                 <Route path="homepage" element={<AdminHomepageBuilder />} />
                 <Route path="analytics" element={<AdminAnalytics />} />
                 <Route path="settings" element={<AdminSettings />} />

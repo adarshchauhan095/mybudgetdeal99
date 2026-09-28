@@ -18,7 +18,6 @@ import {
   Collection,
   Category,
   Deal,
-  Banner,
   HomepageSection,
   SiteSettings,
   FilterState
@@ -28,7 +27,6 @@ import {
   initialCollections,
   initialCategories,
   initialDeals,
-  initialBanners,
   initialHomepageSections,
   initialSiteSettings
 } from '../data/seedData';
@@ -38,7 +36,6 @@ const LS_PRODUCTS = 'mbd_products_v1';
 const LS_COLLECTIONS = 'mbd_collections_v1';
 const LS_CATEGORIES = 'mbd_categories_v1';
 const LS_DEALS = 'mbd_deals_v1';
-const LS_BANNERS = 'mbd_banners_v1';
 const LS_SECTIONS = 'mbd_sections_v1';
 const LS_SETTINGS = 'mbd_settings_v1';
 
@@ -461,63 +458,6 @@ export async function deleteDeal(id: string): Promise<void> {
   setLocalFallback(LS_DEALS, locals.filter(d => d.id !== id));
 }
 
-/**
- * -------------------------------------------------------------
- * BANNERS SERVICE
- * -------------------------------------------------------------
- */
-export async function getBanners(): Promise<Banner[]> {
-  const cacheKey = 'banners_all';
-  const cached = getCached<Banner[]>(cacheKey);
-  if (cached) return cached;
-
-  let banners: Banner[] = [];
-  try {
-    const colRef = collection(db, 'banners');
-    const snapshot = await queryWithTimeout(getDocs(colRef), 1200);
-    if (!snapshot.empty) {
-      snapshot.forEach(docSnap => {
-        banners.push({ id: docSnap.id, ...(docSnap.data() as any) });
-      });
-    } else {
-      banners = getLocalFallback(LS_BANNERS, initialBanners);
-    }
-  } catch (e) {
-    banners = getLocalFallback(LS_BANNERS, initialBanners);
-  }
-
-  banners = banners.filter(b => b.isActive);
-  banners.sort((a, b) => a.displayOrder - b.displayOrder);
-
-  setCached(cacheKey, banners);
-  return banners;
-}
-
-export async function saveBanner(banner: Banner): Promise<Banner> {
-  clearCatalogCache();
-  try {
-    const docRef = doc(db, 'banners', banner.id);
-    await setDoc(docRef, banner, { merge: true });
-  } catch (e) {}
-  const locals = getLocalFallback(LS_BANNERS, initialBanners);
-  const idx = locals.findIndex(b => b.id === banner.id);
-  if (idx >= 0) {
-    locals[idx] = banner;
-  } else {
-    locals.push(banner);
-  }
-  setLocalFallback(LS_BANNERS, locals);
-  return banner;
-}
-
-export async function deleteBanner(id: string): Promise<void> {
-  clearCatalogCache();
-  try {
-    await deleteDoc(doc(db, 'banners', id));
-  } catch (e) {}
-  const locals = getLocalFallback(LS_BANNERS, initialBanners);
-  setLocalFallback(LS_BANNERS, locals.filter(b => b.id !== id));
-}
 
 /**
  * -------------------------------------------------------------
@@ -609,7 +549,6 @@ export async function syncAllToFirestore(): Promise<{ success: boolean; count: n
     const collections = getLocalFallback(LS_COLLECTIONS, initialCollections);
     const categories = getLocalFallback(LS_CATEGORIES, initialCategories);
     const deals = getLocalFallback(LS_DEALS, initialDeals);
-    const banners = getLocalFallback(LS_BANNERS, initialBanners);
     const sections = getLocalFallback(LS_SECTIONS, initialHomepageSections);
     const settings = await getSiteSettings();
 
@@ -629,10 +568,6 @@ export async function syncAllToFirestore(): Promise<{ success: boolean; count: n
     }
     for (const d of deals) {
       await setDoc(doc(db, 'deals', d.id), d, { merge: true });
-      count++;
-    }
-    for (const b of banners) {
-      await setDoc(doc(db, 'banners', b.id), b, { merge: true });
       count++;
     }
     for (const s of sections) {
