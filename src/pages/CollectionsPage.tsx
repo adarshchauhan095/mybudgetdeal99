@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getCollections } from '../services/catalogService';
 import { Collection } from '../types';
 import { CollectionCard } from '../components/common/CollectionCard';
+import { CollectionCardSkeleton } from '../components/common/Shimmer';
 import { SEOHead } from '../components/layout/SEOHead';
 import { Layers, Sparkles } from 'lucide-react';
 import { trackEvent } from '../services/analyticsService';
@@ -44,8 +45,14 @@ export const CollectionsPage: React.FC = () => {
 
         {/* Collections Grid */}
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--text-muted)' }}>
-            Loading curated setups...
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+            gap: '2rem'
+          }}>
+            {[1, 2, 3].map(i => (
+              <CollectionCardSkeleton key={i} />
+            ))}
           </div>
         ) : collections.length > 0 ? (
           <div style={{

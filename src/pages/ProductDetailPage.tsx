@@ -88,8 +88,20 @@ export const ProductDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="container" style={{ padding: '4rem 1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-        Loading product information...
+      <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', paddingTop: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem' }}>
+          <div className="skeleton" style={{ width: '100%', height: '420px', borderRadius: 'var(--radius-xl)' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="skeleton skeleton-badge" style={{ width: '110px', height: '24px' }} />
+            <div className="skeleton skeleton-title" style={{ width: '90%', height: '36px' }} />
+            <div className="skeleton skeleton-title" style={{ width: '65%', height: '36px' }} />
+            <div className="skeleton skeleton-badge" style={{ width: '140px', height: '32px', margin: '0.5rem 0' }} />
+            <div className="skeleton skeleton-text" style={{ width: '100%', height: '18px' }} />
+            <div className="skeleton skeleton-text" style={{ width: '95%', height: '18px' }} />
+            <div className="skeleton skeleton-text" style={{ width: '80%', height: '18px' }} />
+            <div className="skeleton skeleton-btn" style={{ height: '52px', marginTop: '1rem', width: '220px' }} />
+          </div>
+        </div>
       </div>
     );
   }

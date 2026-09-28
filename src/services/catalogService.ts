@@ -103,6 +103,22 @@ function setLocalFallback<T>(key: string, data: T[]) {
   }
 }
 
+// Timeout wrapper preventing long connection delays when Firestore API is pending initialization
+async function queryWithTimeout<T>(promise: Promise<T>, timeoutMs = 1200): Promise<T> {
+  let timer: any;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error('Firestore timeout')), timeoutMs);
+  });
+  try {
+    const result = await Promise.race([promise, timeoutPromise]);
+    clearTimeout(timer);
+    return result;
+  } catch (err) {
+    clearTimeout(timer);
+    throw err;
+  }
+}
+
 /**
  * -------------------------------------------------------------
  * PRODUCTS SERVICE
@@ -117,7 +133,7 @@ export async function getProducts(filters?: FilterState): Promise<Product[]> {
 
   try {
     const colRef = collection(db, 'products');
-    const snapshot = await getDocs(colRef);
+    const snapshot = await queryWithTimeout(getDocs(colRef), 1200);
     if (!snapshot.empty) {
       snapshot.forEach(docSnap => {
         products.push({ id: docSnap.id, ...(docSnap.data() as any) });
@@ -273,7 +289,7 @@ export async function getCollections(): Promise<Collection[]> {
   let collections: Collection[] = [];
   try {
     const colRef = collection(db, 'collections');
-    const snapshot = await getDocs(colRef);
+    const snapshot = await queryWithTimeout(getDocs(colRef), 1200);
     if (!snapshot.empty) {
       snapshot.forEach(docSnap => {
         collections.push({ id: docSnap.id, ...(docSnap.data() as any) });
@@ -336,7 +352,7 @@ export async function getCategories(): Promise<Category[]> {
   let categories: Category[] = [];
   try {
     const colRef = collection(db, 'categories');
-    const snapshot = await getDocs(colRef);
+    const snapshot = await queryWithTimeout(getDocs(colRef), 1200);
     if (!snapshot.empty) {
       snapshot.forEach(docSnap => {
         categories.push({ id: docSnap.id, ...(docSnap.data() as any) });
@@ -398,7 +414,7 @@ export async function getDeals(): Promise<Deal[]> {
   let deals: Deal[] = [];
   try {
     const colRef = collection(db, 'deals');
-    const snapshot = await getDocs(colRef);
+    const snapshot = await queryWithTimeout(getDocs(colRef), 1200);
     if (!snapshot.empty) {
       snapshot.forEach(docSnap => {
         deals.push({ id: docSnap.id, ...(docSnap.data() as any) });
@@ -458,7 +474,7 @@ export async function getBanners(): Promise<Banner[]> {
   let banners: Banner[] = [];
   try {
     const colRef = collection(db, 'banners');
-    const snapshot = await getDocs(colRef);
+    const snapshot = await queryWithTimeout(getDocs(colRef), 1200);
     if (!snapshot.empty) {
       snapshot.forEach(docSnap => {
         banners.push({ id: docSnap.id, ...(docSnap.data() as any) });
@@ -516,7 +532,7 @@ export async function getHomepageSections(): Promise<HomepageSection[]> {
   let sections: HomepageSection[] = [];
   try {
     const colRef = collection(db, 'homepageSections');
-    const snapshot = await getDocs(colRef);
+    const snapshot = await queryWithTimeout(getDocs(colRef), 1200);
     if (!snapshot.empty) {
       snapshot.forEach(docSnap => {
         sections.push({ id: docSnap.id, ...(docSnap.data() as any) });

@@ -25,6 +25,12 @@ import { SEOHead } from '../components/layout/SEOHead';
 import { BannerCarousel } from '../components/common/BannerCarousel';
 import { ProductCard } from '../components/common/ProductCard';
 import { CollectionCard } from '../components/common/CollectionCard';
+import {
+  BannerSkeleton,
+  ProductCardSkeleton,
+  CollectionCardSkeleton,
+  CategoryGridSkeleton
+} from '../components/common/Shimmer';
 import { trackEvent } from '../services/analyticsService';
 
 export const HomePage: React.FC = () => {
@@ -80,11 +86,15 @@ export const HomePage: React.FC = () => {
       <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '3.5rem' }}>
         
         {/* Hero Section */}
-        {banners.length > 0 && (
+        {loading ? (
+          <section style={{ marginTop: '0.5rem' }}>
+            <BannerSkeleton />
+          </section>
+        ) : banners.length > 0 ? (
           <section style={{ marginTop: '0.5rem' }}>
             <BannerCarousel banners={banners} />
           </section>
-        )}
+        ) : null}
 
         {/* Feature USPs Bar */}
         <section style={{
@@ -138,7 +148,7 @@ export const HomePage: React.FC = () => {
         </section>
 
         {/* Featured Deals Section */}
-        {dealProducts.length > 0 && (
+        {(loading || dealProducts.length > 0) && (
           <section>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
               <div>
@@ -155,15 +165,15 @@ export const HomePage: React.FC = () => {
             </div>
 
             <div className="product-grid">
-              {dealProducts.map(p => (
-                <ProductCard key={p.id} product={p} />
-              ))}
+              {loading
+                ? [1, 2, 3, 4].map(i => <ProductCardSkeleton key={i} />)
+                : dealProducts.map(p => <ProductCard key={p.id} product={p} />)}
             </div>
           </section>
         )}
 
         {/* Curated Groups & Setups Showcase (System B) */}
-        {collections.length > 0 && (
+        {(loading || collections.length > 0) && (
           <section style={{
             background: 'linear-gradient(180deg, rgba(31, 41, 61, 0.4) 0%, rgba(11, 15, 25, 0.6) 100%)',
             border: '1px solid var(--border-subtle)',
@@ -193,15 +203,15 @@ export const HomePage: React.FC = () => {
               gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
               gap: '1.5rem'
             }}>
-              {collections.slice(0, 3).map(col => (
-                <CollectionCard key={col.id} collection={col} />
-              ))}
+              {loading
+                ? [1, 2, 3].map(i => <CollectionCardSkeleton key={i} />)
+                : collections.slice(0, 3).map(col => <CollectionCard key={col.id} collection={col} />)}
             </div>
           </section>
         )}
 
         {/* Categories Grid */}
-        {categories.length > 0 && (
+        {(loading || categories.length > 0) && (
           <section>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
               <div>
@@ -216,49 +226,53 @@ export const HomePage: React.FC = () => {
               </Link>
             </div>
 
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '1.25rem'
-            }}>
-              {categories.map(cat => (
-                <Link
-                  key={cat.id}
-                  to={`/category/${cat.slug}`}
-                  style={{
-                    position: 'relative',
-                    borderRadius: 'var(--radius-lg)',
-                    overflow: 'hidden',
-                    aspectRatio: '16 / 10',
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border-subtle)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'flex-end',
-                    padding: '1.25rem',
-                    transition: 'all 0.3s ease'
-                  }}
-                  className="cat-card-hover"
-                >
-                  {cat.imageUrl && (
-                    <img
-                      src={cat.imageUrl}
-                      alt={cat.name}
-                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.45 }}
-                    />
-                  )}
-                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #0b0f19 0%, rgba(11, 15, 25, 0.4) 60%, transparent 100%)' }} />
-                  <div style={{ position: 'relative', zIndex: 2 }}>
-                    <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff', marginBottom: '0.2rem' }}>
-                      {cat.name}
-                    </h3>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--accent-primary)', fontWeight: 600 }}>
-                      {cat.subcategories?.length || 0} subcategories • View Gear →
+            {loading ? (
+              <CategoryGridSkeleton />
+            ) : (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                gap: '1.25rem'
+              }}>
+                {categories.map(cat => (
+                  <Link
+                    key={cat.id}
+                    to={`/category/${cat.slug}`}
+                    style={{
+                      position: 'relative',
+                      borderRadius: 'var(--radius-lg)',
+                      overflow: 'hidden',
+                      aspectRatio: '16 / 10',
+                      background: 'var(--bg-card)',
+                      border: '1px solid var(--border-subtle)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'flex-end',
+                      padding: '1.25rem',
+                      transition: 'all 0.3s ease'
+                    }}
+                    className="cat-card-hover"
+                  >
+                    {cat.imageUrl && (
+                      <img
+                        src={cat.imageUrl}
+                        alt={cat.name}
+                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.45 }}
+                      />
+                    )}
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #0b0f19 0%, rgba(11, 15, 25, 0.4) 60%, transparent 100%)' }} />
+                    <div style={{ position: 'relative', zIndex: 2 }}>
+                      <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff', marginBottom: '0.2rem' }}>
+                        {cat.name}
+                      </h3>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--accent-primary)', fontWeight: 600 }}>
+                        {cat.subcategories?.length || 0} subcategories • View Gear →
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                  </Link>
+                ))}
+              </div>
+            )}
 
             <style>{`
               .cat-card-hover:hover {
@@ -271,7 +285,7 @@ export const HomePage: React.FC = () => {
         )}
 
         {/* Trending Individual Products (System A) */}
-        {trendingProducts.length > 0 && (
+        {(loading || trendingProducts.length > 0) && (
           <section>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
               <div>
@@ -288,9 +302,9 @@ export const HomePage: React.FC = () => {
             </div>
 
             <div className="product-grid">
-              {trendingProducts.map(p => (
-                <ProductCard key={p.id} product={p} />
-              ))}
+              {loading
+                ? [1, 2, 3, 4, 5, 6, 7, 8].map(i => <ProductCardSkeleton key={i} />)
+                : trendingProducts.map(p => <ProductCard key={p.id} product={p} />)}
             </div>
           </section>
         )}

@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { getProducts, getCategories } from '../services/catalogService';
 import { Product, Category, FilterState } from '../types';
 import { ProductCard } from '../components/common/ProductCard';
+import { ProductCardSkeleton } from '../components/common/Shimmer';
 import { FilterSidebar } from '../components/common/FilterSidebar';
 import { SEOHead } from '../components/layout/SEOHead';
 import { Search, X, SlidersHorizontal } from 'lucide-react';
@@ -167,8 +168,10 @@ export const ProductsPage: React.FC = () => {
             </div>
 
             {loading ? (
-              <div style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--text-muted)' }}>
-                Loading catalog products...
+              <div className="product-grid">
+                {[1, 2, 3, 4, 5, 6].map(i => (
+                  <ProductCardSkeleton key={i} />
+                ))}
               </div>
             ) : products.length > 0 ? (
               <div className="product-grid">
