@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Compass,
   ArrowRight,
@@ -10,7 +10,11 @@ import {
   Truck,
   TrendingUp,
   FolderTree,
-  CheckCircle2
+  CheckCircle2,
+  Star,
+  ExternalLink,
+  Flame,
+  Check
 } from 'lucide-react';
 import {
   getProducts,
@@ -29,6 +33,7 @@ import {
   CategoryGridSkeleton
 } from '../components/common/Shimmer';
 import { trackEvent } from '../services/analyticsService';
+import { useSite } from '../context/SiteContext';
 
 export const HomePage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -37,6 +42,9 @@ export const HomePage: React.FC = () => {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [sections, setSections] = useState<HomepageSection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'deals' | 'under500' | 'study' | 'car'>('all');
+  const { formatPrice } = useSite();
+  const navigate = useNavigate();
 
   useEffect(() => {
     trackEvent('page_view', { title: 'Home Page', targetSlug: '/' });
@@ -69,16 +77,227 @@ export const HomePage: React.FC = () => {
   const trendingProducts = products.filter(p => p.isTrending).slice(0, 8);
   const featuredProducts = products.filter(p => p.isFeatured).slice(0, 6);
 
+  // Spotlight product for Hero Showcase
+  const spotlightProduct = products.find(p => p.asin === 'B07YZ367F6') || products[0];
+
+  // Quick filtered products for the interactive filter
+  const filteredProducts = products.filter(p => {
+    if (activeFilter === 'deals') return p.isDeal || (p.discountPercentage && p.discountPercentage >= 35);
+    if (activeFilter === 'under500') return p.currentPrice && p.currentPrice <= 500;
+    if (activeFilter === 'study') return p.categorySlug === 'office-and-study' || p.tags.includes('desk');
+    if (activeFilter === 'car') return p.categorySlug === 'car-and-travel' || p.tags.includes('car');
+    return true;
+  });
+
   return (
     <>
       <SEOHead
-        title="Discover Smart Amazon Setups & Budget Deals"
-        description="Curated Amazon setups for study tables, cars, home offices, and kitchen organization. Discover hand-picked gear with verified reviews."
+        title="Discover Smart Amazon Setups & Budget Deals Under ₹999"
+        description="Curated Amazon setups for study tables, cars, home offices, and kitchen organization. Discover hand-picked gear with verified 4★+ reviews and direct Prime delivery."
         canonicalPath="/"
       />
 
-      <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '3.5rem', paddingTop: '1rem' }}>
+      <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '3.5rem', paddingTop: '0.5rem' }}>
         
+        {/* Dynamic High-Impact Hero Banner */}
+        <section className="hero-wrapper">
+          <div className="hero-grid">
+            
+            {/* Left Column: Value Prop & Interactive Filter Pills */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              
+              {/* Live Deal Pulse Badge */}
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.6rem',
+                background: 'rgba(255, 153, 0, 0.1)',
+                border: '1px solid rgba(255, 153, 0, 0.3)',
+                padding: '0.35rem 0.85rem',
+                borderRadius: 'var(--radius-full)',
+                width: 'fit-content'
+              }}>
+                <span className="pulse-dot"></span>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-primary)', letterSpacing: '0.02em' }}>
+                  VERIFIED AMAZON FINDS • UP TO 64% OFF
+                </span>
+              </div>
+
+              {/* Catchy Headline */}
+              <h1 className="hero-title-gradient">
+                Smart Gadgets & Hand-Picked Deals Under ₹999
+              </h1>
+
+              {/* Subtitle */}
+              <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: 1.6, maxWidth: '580px' }}>
+                Skip the junk clones. We test and organize aesthetic desk setups, car essentials, and daily budget tech with <strong>100% verified Amazon ASINs</strong> and direct Prime fulfillment.
+              </p>
+
+              {/* Quick Filter Pills */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.25rem' }}>
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Popular Categories & Deals:
+                </span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <button
+                    onClick={() => setActiveFilter('all')}
+                    className={`filter-pill ${activeFilter === 'all' ? 'active' : ''}`}
+                  >
+                    🌟 All Best-Sellers
+                  </button>
+                  <button
+                    onClick={() => setActiveFilter('deals')}
+                    className={`filter-pill ${activeFilter === 'deals' ? 'active' : ''}`}
+                  >
+                    ⚡ Top Price Drops
+                  </button>
+                  <button
+                    onClick={() => setActiveFilter('under500')}
+                    className={`filter-pill ${activeFilter === 'under500' ? 'active' : ''}`}
+                  >
+                    🏷️ Under ₹500
+                  </button>
+                  <button
+                    onClick={() => setActiveFilter('study')}
+                    className={`filter-pill ${activeFilter === 'study' ? 'active' : ''}`}
+                  >
+                    🖥️ Study & Desk Kit
+                  </button>
+                  <button
+                    onClick={() => setActiveFilter('car')}
+                    className={`filter-pill ${activeFilter === 'car' ? 'active' : ''}`}
+                  >
+                    🚗 Car Essentials
+                  </button>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
+                <Link to="/collections" className="btn btn-primary" style={{ padding: '0.8rem 1.5rem', fontSize: '0.95rem' }}>
+                  <Layers size={18} />
+                  <span>Explore Coordinated Setups</span>
+                </Link>
+                <Link to="/deals" className="btn btn-secondary" style={{ padding: '0.8rem 1.5rem', fontSize: '0.95rem' }}>
+                  <Zap size={18} color="#f87171" />
+                  <span>Browse Flash Deals</span>
+                </Link>
+              </div>
+
+            </div>
+
+            {/* Right Column: Hero Spotlight Deal Card */}
+            {spotlightProduct && (
+              <div className="spotlight-card">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#ff9900', fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <Sparkles size={14} />
+                    <span>Today's Spotlight Deal</span>
+                  </div>
+                  <span className="badge-prime">
+                    prime
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1rem' }}>
+                  <div style={{
+                    width: '90px',
+                    height: '90px',
+                    borderRadius: 'var(--radius-md)',
+                    overflow: 'hidden',
+                    background: '#151d2f',
+                    flexShrink: 0,
+                    border: '1px solid var(--border-medium)'
+                  }}>
+                    <img
+                      src={spotlightProduct.imageUrl}
+                      alt={spotlightProduct.title}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  </div>
+
+                  <div style={{ flex: 1 }}>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--accent-primary)', fontWeight: 700, textTransform: 'uppercase' }}>
+                      {spotlightProduct.brand}
+                    </span>
+                    <h3 style={{
+                      fontSize: '0.95rem',
+                      fontWeight: 700,
+                      color: '#ffffff',
+                      lineHeight: 1.35,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      margin: '0.2rem 0 0.4rem 0'
+                    }}>
+                      {spotlightProduct.title}
+                    </h3>
+                    <div className="rating-pill">
+                      <Star size={13} fill="#fbbf24" stroke="none" />
+                      <span>4.4</span>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 500 }}>(2,400+ reviews)</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Price Display */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  justifyContent: 'space-between',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  padding: '0.75rem 1rem',
+                  borderRadius: 'var(--radius-md)',
+                  marginBottom: '1rem'
+                }}>
+                  <div>
+                    <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ffffff' }}>
+                      {formatPrice(spotlightProduct.currentPrice || 449, spotlightProduct.currency)}
+                    </span>
+                    {spotlightProduct.previousPrice && (
+                      <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textDecoration: 'line-through', marginLeft: '0.5rem' }}>
+                        {formatPrice(spotlightProduct.previousPrice, spotlightProduct.currency)}
+                      </span>
+                    )}
+                  </div>
+                  {spotlightProduct.discountPercentage && (
+                    <span className="badge badge-deal" style={{ fontWeight: 800 }}>
+                      <Zap size={11} fill="#f87171" />
+                      {spotlightProduct.discountPercentage}% OFF
+                    </span>
+                  )}
+                </div>
+
+                <a
+                  href={spotlightProduct.affiliateUrl}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  className="btn btn-amazon-glow"
+                  style={{ width: '100%', padding: '0.75rem 1rem', fontSize: '0.92rem' }}
+                >
+                  <span>Check Deal on Amazon</span>
+                  <ExternalLink size={16} />
+                </a>
+
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.35rem',
+                  marginTop: '0.65rem',
+                  fontSize: '0.72rem',
+                  color: 'var(--text-muted)'
+                }}>
+                  <ShieldCheck size={13} color="var(--accent-green)" />
+                  <span>Amazon Special Link • Tag: mybudgetdeal9-21</span>
+                </div>
+              </div>
+            )}
+
+          </div>
+        </section>
+
         {/* Feature USPs Bar */}
         <section style={{
           display: 'grid',
@@ -115,7 +334,7 @@ export const HomePage: React.FC = () => {
             </div>
             <div>
               <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff' }}>Verified Price Drops</div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Daily deals up to 50% discount</div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Daily deals up to 64% discount</div>
             </div>
           </div>
 
@@ -129,6 +348,36 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
         </section>
+
+        {/* Quick Filter Active Results if filter is not 'all' */}
+        {activeFilter !== 'all' && (
+          <section style={{
+            background: 'var(--bg-card)',
+            border: '1px solid var(--accent-primary)',
+            borderRadius: 'var(--radius-xl)',
+            padding: '1.75rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+              <div>
+                <span className="badge badge-trending">
+                  Filtered Results
+                </span>
+                <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginTop: '0.25rem' }}>
+                  Showing {filteredProducts.length} Handpicked Deals
+                </h2>
+              </div>
+              <button onClick={() => setActiveFilter('all')} className="btn btn-outline btn-sm">
+                Clear Filter
+              </button>
+            </div>
+
+            <div className="product-grid">
+              {filteredProducts.map(p => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Featured Deals Section */}
         {(loading || dealProducts.length > 0) && (
@@ -165,8 +414,8 @@ export const HomePage: React.FC = () => {
           }}>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '2rem' }}>
               <div>
-                <span className="badge badge-trending" style={{ marginBottom: '0.5rem' }}>
-                  System B • Smart Collections
+                <span className="badge badge-trending" style={{ marginBottom: '0.5rem', background: 'rgba(255, 153, 0, 0.15)', borderColor: 'var(--accent-primary)' }}>
+                  🎯 Coordinated Lifestyle Setups
                 </span>
                 <h2 style={{ fontSize: '1.85rem', fontWeight: 800 }}>
                   Curated Setups for Every Space
@@ -267,7 +516,7 @@ export const HomePage: React.FC = () => {
           </section>
         )}
 
-        {/* Trending Individual Products (System A) */}
+        {/* Trending Individual Products */}
         {(loading || trendingProducts.length > 0) && (
           <section>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '1.5rem' }}>

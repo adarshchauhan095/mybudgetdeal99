@@ -26,7 +26,10 @@ import {
   Plus,
   Trash2,
   ExternalLink,
-  Layers
+  Layers,
+  Upload,
+  Image as ImageIcon,
+  X
 } from 'lucide-react';
 
 export const AdminProductEdit: React.FC = () => {
@@ -61,7 +64,8 @@ export const AdminProductEdit: React.FC = () => {
     tags: [],
     collectionSlugs: [],
     keywords: [],
-    imageUrl: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=800&q=80',
+    imageUrl: '',
+    additionalImages: [],
     amazonUrl: '',
     affiliateUrl: '',
     currency: 'INR',
@@ -84,6 +88,72 @@ export const AdminProductEdit: React.FC = () => {
 
   const [tagsInput, setTagsInput] = useState('');
   const [saving, setSaving] = useState(false);
+  const [imageError, setImageError] = useState('');
+
+  const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setImageError('');
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setImageError('Please select a valid image file (PNG, JPG, WEBP, GIF).');
+      showToast('Invalid file format. Please upload an image.', 'error');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setImageError('Image file size must be less than 5 MB.');
+      showToast('Image too large (max 5MB).', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (dataUrl) {
+        setProductData(prev => ({ ...prev, imageUrl: dataUrl }));
+        setImageError('');
+        showToast('Product image uploaded successfully!', 'success');
+      }
+    };
+    reader.onerror = () => {
+      setImageError('Failed to read image file. Please try again.');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAdditionalImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        if (dataUrl) {
+          setProductData(prev => ({
+            ...prev,
+            additionalImages: [...(prev.additionalImages || []), dataUrl]
+          }));
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+    showToast('Additional image(s) uploaded', 'success');
+  };
+
+  const handleRemoveMainImage = () => {
+    setProductData(prev => ({ ...prev, imageUrl: '' }));
+  };
+
+  const handleRemoveAdditionalImage = (index: number) => {
+    setProductData(prev => {
+      const list = [...(prev.additionalImages || [])];
+      list.splice(index, 1);
+      return { ...prev, additionalImages: list };
+    });
+  };
 
   useEffect(() => {
     Promise.all([getCategories(), getCollections()]).then(([cats, cols]) => {
@@ -162,18 +232,26 @@ export const AdminProductEdit: React.FC = () => {
   };
 
   // Phase 50: Publish Checklist Validation
+  const hasValidImage = !!productData.imageUrl && productData.imageUrl.trim().length > 10;
+
   const checklist = [
     { label: '10-character Amazon ASIN provided', valid: !!productData.asin && productData.asin.length === 10 },
     { label: 'Product Title specified', valid: !!productData.title && productData.title.trim().length > 5 },
     { label: 'Valid Special Link with Tracking ID', valid: !!productData.affiliateUrl && productData.affiliateUrl.includes('tag=') },
     { label: 'Category department assigned', valid: !!productData.categorySlug },
-    { label: 'Product image URL set', valid: !!productData.imageUrl }
+    { label: 'Mandatory Product Image uploaded or set *', valid: hasValidImage }
   ];
 
   const canPublish = checklist.every(c => c.valid);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasValidImage) {
+      setImageError('Product image is MANDATORY. Please upload an image file or provide a valid image URL.');
+      showToast('Product Image is MANDATORY. Please upload an image.', 'error');
+      return;
+    }
+
     if (!canPublish) {
       showToast('Please fix checklist requirements before publishing', 'error');
       return;
@@ -440,17 +518,201 @@ export const AdminProductEdit: React.FC = () => {
               />
             </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.35rem' }}>
-                Product Image URL *
-              </label>
-              <input
-                type="text"
-                value={productData.imageUrl || ''}
-                onChange={(e) => setProductData({ ...productData, imageUrl: e.target.value })}
-                style={{ width: '100%', fontSize: '0.85rem' }}
-                required
-              />
+            {/* Mandatory Product Image Upload Section */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.85rem',
+              background: 'rgba(255, 255, 255, 0.02)',
+              border: imageError || (!productData.imageUrl && !isNew)
+                ? '1px dashed #ef4444'
+                : !productData.imageUrl
+                ? '1px dashed var(--accent-primary)'
+                : '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-md)',
+              padding: '1.25rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.9rem', fontWeight: 700, color: '#ffffff' }}>
+                  <ImageIcon size={18} color="var(--accent-primary)" />
+                  <span>Main Product Image <span style={{ color: '#ef4444' }}>* (Mandatory)</span></span>
+                </label>
+                {productData.imageUrl && (
+                  <span style={{ fontSize: '0.75rem', color: 'var(--accent-green)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <CheckCircle2 size={14} /> Image Attached
+                  </span>
+                )}
+              </div>
+
+              {imageError && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#f87171', fontSize: '0.8rem', background: 'rgba(239, 68, 68, 0.1)', padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)' }}>
+                  <AlertTriangle size={15} />
+                  <span>{imageError}</span>
+                </div>
+              )}
+
+              {/* Main Image Preview if exists */}
+              {productData.imageUrl ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', background: '#0e1526', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+                  <div style={{ width: '90px', height: '90px', borderRadius: 'var(--radius-sm)', overflow: 'hidden', background: '#182238', border: '1px solid var(--border-medium)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <img
+                      src={productData.imageUrl}
+                      alt="Main Preview"
+                      style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                      onError={() => setImageError('Failed to display image from URL. Please check the URL or upload a valid file.')}
+                    />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <div style={{ fontSize: '0.82rem', color: '#ffffff', fontWeight: 600, wordBreak: 'break-all' }}>
+                      {productData.imageUrl.startsWith('data:') ? 'Custom Uploaded Image (Base64 Data)' : productData.imageUrl}
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer', padding: '0.35rem 0.65rem', fontSize: '0.78rem' }}>
+                        <Upload size={13} />
+                        <span>Replace File</span>
+                        <input
+                          type="file"
+                          accept="image/png, image/jpeg, image/webp, image/gif"
+                          onChange={handleImageFileUpload}
+                          style={{ display: 'none' }}
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleRemoveMainImage}
+                        className="btn btn-sm"
+                        style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '0.35rem 0.65rem', fontSize: '0.78rem' }}
+                      >
+                        <Trash2 size={13} />
+                        <span>Remove Image</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* Drag & Drop Upload Zone */
+                <label style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.65rem',
+                  padding: '2rem 1.5rem',
+                  border: '2px dashed var(--accent-primary)',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'rgba(249, 115, 22, 0.04)',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  transition: 'background 0.2s ease'
+                }}>
+                  <div style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '50%',
+                    background: 'var(--accent-light)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'var(--accent-primary)'
+                  }}>
+                    <Upload size={22} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#ffffff' }}>
+                      Click to upload product image file
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                      Supports PNG, JPG, WEBP, GIF up to 5 MB
+                    </div>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/png, image/jpeg, image/webp, image/gif"
+                    onChange={handleImageFileUpload}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+              )}
+
+              {/* Direct URL input fallback */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginTop: '0.25rem' }}>
+                <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>
+                  Or paste direct image URL (e.g. Amazon CDN):
+                </span>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <input
+                    type="url"
+                    value={productData.imageUrl || ''}
+                    onChange={(e) => {
+                      setProductData({ ...productData, imageUrl: e.target.value });
+                      setImageError('');
+                    }}
+                    placeholder="https://m.media-amazon.com/images/I/..."
+                    style={{ flex: 1, fontSize: '0.85rem' }}
+                  />
+                  {productData.imageUrl && (
+                    <button
+                      type="button"
+                      onClick={() => window.open(productData.imageUrl, '_blank')}
+                      className="btn btn-secondary btn-sm"
+                      title="Open image in new tab"
+                    >
+                      <ExternalLink size={14} />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Additional Gallery Images */}
+              <div style={{ marginTop: '0.75rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                    Additional Gallery Images ({productData.additionalImages?.length || 0})
+                  </span>
+                  <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer', padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>
+                    <Plus size={13} />
+                    <span>Add Gallery Image</span>
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={handleAdditionalImageUpload}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                </div>
+
+                {productData.additionalImages && productData.additionalImages.length > 0 && (
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    {productData.additionalImages.map((imgUrl, i) => (
+                      <div key={i} style={{ position: 'relative', width: '56px', height: '56px', borderRadius: 'var(--radius-sm)', overflow: 'hidden', background: '#111827', border: '1px solid var(--border-subtle)' }}>
+                        <img src={imgUrl} alt={`Gallery ${i}`} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveAdditionalImage(i)}
+                          style={{
+                            position: 'absolute',
+                            top: '2px',
+                            right: '2px',
+                            width: '18px',
+                            height: '18px',
+                            borderRadius: '50%',
+                            background: 'rgba(239, 68, 68, 0.9)',
+                            color: '#ffffff',
+                            border: 'none',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          <X size={10} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

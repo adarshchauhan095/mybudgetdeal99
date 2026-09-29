@@ -9,7 +9,7 @@ import {
 import { Collection, Product } from '../../types';
 import { useSite } from '../../context/SiteContext';
 import { logAdminAction } from '../../services/auditService';
-import { Layers, Plus, Edit, Trash2, CheckCircle2, ArrowRight, ExternalLink } from 'lucide-react';
+import { Layers, Plus, Edit, Trash2, CheckCircle2, ArrowRight, ExternalLink, Upload, Image as ImageIcon } from 'lucide-react';
 import { generateSlug } from '../../services/amazonService';
 
 export const AdminCollections: React.FC = () => {
@@ -57,6 +57,24 @@ export const AdminCollections: React.FC = () => {
     setEditingCol(newCol);
     setChecklistInput('');
     setTipsInput('');
+  };
+
+  const handleCoverImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      showToast('Please select a valid image file', 'error');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (dataUrl && editingCol) {
+        setEditingCol(prev => prev ? ({ ...prev, coverImage: dataUrl }) : null);
+        showToast('Cover image attached successfully', 'success');
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleToggleProduct = (prodId: string) => {
@@ -192,15 +210,35 @@ export const AdminCollections: React.FC = () => {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.35rem' }}>
-              Cover Image URL
-            </label>
-            <input
-              type="text"
-              value={editingCol.coverImage || ''}
-              onChange={(e) => setEditingCol({ ...editingCol, coverImage: e.target.value })}
-              style={{ width: '100%' }}
-            />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#ffffff' }}>
+                Cover Image (File Upload or URL) *
+              </label>
+              <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer', padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}>
+                <Upload size={12} />
+                <span>Upload Cover</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleCoverImageUpload}
+                  style={{ display: 'none' }}
+                />
+              </label>
+            </div>
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+              {editingCol.coverImage && (
+                <div style={{ width: '60px', height: '42px', borderRadius: '4px', overflow: 'hidden', background: '#1e293b', flexShrink: 0, border: '1px solid var(--border-subtle)' }}>
+                  <img src={editingCol.coverImage} alt="Cover preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              )}
+              <input
+                type="text"
+                placeholder="https://... or upload a file"
+                value={editingCol.coverImage || ''}
+                onChange={(e) => setEditingCol({ ...editingCol, coverImage: e.target.value })}
+                style={{ flex: 1 }}
+              />
+            </div>
           </div>
 
           {/* Phase 47 Editorial Checklist & Tips Inputs */}

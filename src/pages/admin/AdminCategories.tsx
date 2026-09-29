@@ -7,7 +7,7 @@ import {
 import { Category, SubCategory } from '../../types';
 import { useSite } from '../../context/SiteContext';
 import { logAdminAction } from '../../services/auditService';
-import { FolderTree, Plus, Edit, Trash2, CheckCircle2 } from 'lucide-react';
+import { FolderTree, Plus, Edit, Trash2, CheckCircle2, Upload, Image, X } from 'lucide-react';
 import { generateSlug } from '../../services/amazonService';
 
 export const AdminCategories: React.FC = () => {
@@ -29,13 +29,38 @@ export const AdminCategories: React.FC = () => {
     setSubcatsInput(cat.subcategories?.map(s => s.name).join(', ') || '');
   };
 
+  const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showToast('Please select a valid image file', 'error');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('File size must be under 5MB', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (dataUrl && editingCat) {
+        setEditingCat(prev => prev ? ({ ...prev, imageUrl: dataUrl }) : null);
+        showToast('Category image attached successfully', 'success');
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleNew = () => {
     setEditingCat({
       id: `cat-${Date.now()}`,
       name: '',
       slug: '',
       description: '',
-      imageUrl: 'https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?auto=format&fit=crop&w=600&q=80',
+      imageUrl: '',
       priority: 80,
       isActive: true,
       subcategories: []
@@ -159,15 +184,80 @@ export const AdminCategories: React.FC = () => {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.35rem' }}>
-              Cover Image URL
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.5rem' }}>
+              Department Image (Upload or URL)
             </label>
-            <input
-              type="text"
-              value={editingCat.imageUrl || ''}
-              onChange={(e) => setEditingCat({ ...editingCat, imageUrl: e.target.value })}
-              style={{ width: '100%' }}
-            />
+            
+            {editingCat.imageUrl ? (
+              <div style={{
+                position: 'relative',
+                display: 'inline-block',
+                borderRadius: 'var(--radius-md)',
+                overflow: 'hidden',
+                border: '1px solid var(--border-subtle)',
+                marginBottom: '0.75rem',
+                maxHeight: '140px'
+              }}>
+                <img
+                  src={editingCat.imageUrl}
+                  alt="Department preview"
+                  style={{ height: '120px', width: '220px', objectFit: 'cover', display: 'block' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setEditingCat({ ...editingCat, imageUrl: '' })}
+                  style={{
+                    position: 'absolute',
+                    top: '6px',
+                    right: '6px',
+                    background: 'rgba(0,0,0,0.7)',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '50%',
+                    padding: '4px',
+                    cursor: 'pointer'
+                  }}
+                  title="Remove image"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : null}
+
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <label style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.6rem 1rem',
+                background: 'rgba(255, 153, 0, 0.1)',
+                border: '1px dashed var(--accent-primary)',
+                borderRadius: 'var(--radius-md)',
+                color: 'var(--accent-primary)',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}>
+                <Upload size={16} />
+                <span>Upload from Device</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleCoverUpload}
+                  style={{ display: 'none' }}
+                />
+              </label>
+
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>or paste URL:</span>
+
+              <input
+                type="text"
+                placeholder="https://..."
+                value={editingCat.imageUrl || ''}
+                onChange={(e) => setEditingCat({ ...editingCat, imageUrl: e.target.value })}
+                style={{ flex: 1, minWidth: '220px' }}
+              />
+            </div>
           </div>
 
           <div>
