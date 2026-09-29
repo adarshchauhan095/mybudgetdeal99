@@ -13,6 +13,7 @@ import {
 import { Product, Category } from '../../types';
 import { useSite } from '../../context/SiteContext';
 import { logAdminAction } from '../../services/auditService';
+import { optimizeImageFile, optimizeMultipleImageFiles } from '../../utils/imageOptimizer';
 import {
   ArrowLeft,
   Sparkles,
@@ -23,7 +24,9 @@ import {
   Flame,
   CheckCircle2,
   AlertCircle,
-  Plus
+  Plus,
+  Loader2,
+  Save
 } from 'lucide-react';
 
 export const AdminProductEdit: React.FC = () => {
@@ -35,6 +38,8 @@ export const AdminProductEdit: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [imageProcessing, setImageProcessing] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
   const [imageError, setImageError] = useState('');
 
   // Simplified Form State — only the minimum essential fields
@@ -79,8 +84,21 @@ export const AdminProductEdit: React.FC = () => {
     }
   }, [id, isNew]);
 
+  // Warn before leaving if unsaved changes exist
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
+
   // Handle Price Changes & Auto-calculate Discount %
   const handlePriceChange = (field: 'previousPrice' | 'currentPrice', val: number) => {
+    setIsDirty(true);
     setProductData(prev => {
       const prevPrice = field === 'previousPrice' ? val : (prev.previousPrice || 0);
       const currPrice = field === 'currentPrice' ? val : (prev.currentPrice || 0);
@@ -99,6 +117,7 @@ export const AdminProductEdit: React.FC = () => {
 
   // Amazon URL Parser & Auto-generator
   const handleAmazonUrlChange = (url: string) => {
+    setIsDirty(true);
     setAmazonUrlInput(url);
     if (!url.trim()) return;
 
@@ -115,8 +134,8 @@ export const AdminProductEdit: React.FC = () => {
     }
   };
 
-  // Main Image Upload Handler
-  const handleMainImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Main Image Upload Handler with High-Definition Compression
+  const handleMainImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setImageError('');
     const file = e.target.files?.[0];
     if (!file) return;
@@ -127,44 +146,50 @@ export const AdminProductEdit: React.FC = () => {
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setImageError('Image file size must be less than 5 MB.');
-      showToast('Image too large (max 5MB).', 'error');
-      return;
+    setImageProcessing(true);
+    try {
+      showToast('Optimizing main product image...', 'info');
+      const optimizedUrl = await optimizeImageFile(file, { maxDimension: 1200, quality: 0.82 });
+      setProductData(prev => ({ ...prev, imageUrl: optimizedUrl }));
+      setIsDirty(true);
+      setImageError('');
+      showToast('Main product image ready! Click Save Changes to save.', 'success');
+    } catch (err) {
+      console.error('Image compression error', err);
+      setImageError('Failed to process image. Please try another file.');
+      showToast('Could not process image file', 'error');
+    } finally {
+      setImageProcessing(false);
+      e.target.value = '';
     }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      if (dataUrl) {
-        setProductData(prev => ({ ...prev, imageUrl: dataUrl }));
-        setImageError('');
-        showToast('Main product image uploaded!', 'success');
-      }
-    };
-    reader.readAsDataURL(file);
   };
 
-  // Additional Gallery Image Upload Handler (Multiple Files)
-  const handleAdditionalImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Additional Gallery Image Upload Handler (Multiple Files with Compression)
+  const handleAdditionalImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    Array.from(files).forEach(file => {
-      if (!file.type.startsWith('image/')) return;
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const dataUrl = event.target?.result as string;
-        if (dataUrl) {
-          setProductData(prev => ({
-            ...prev,
-            additionalImages: [...(prev.additionalImages || []), dataUrl]
-          }));
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-    showToast('Additional image(s) uploaded', 'success');
+    setImageProcessing(true);
+    try {
+      showToast(`Optimizing ${files.length} gallery image(s)...`, 'info');
+      const fileList = Array.from(files);
+      const optimizedUrls = await optimizeMultipleImageFiles(fileList, { maxDimension: 1000, quality: 0.80 });
+
+      if (optimizedUrls.length > 0) {
+        setProductData(prev => ({
+          ...prev,
+          additionalImages: [...(prev.additionalImages || []), ...optimizedUrls]
+        }));
+        setIsDirty(true);
+        showToast(`Added ${optimizedUrls.length} image(s) to gallery! Click "Save Changes" to publish.`, 'success');
+      }
+    } catch (err) {
+      console.error('Gallery image compression error', err);
+      showToast('Failed to optimize some gallery images.', 'error');
+    } finally {
+      setImageProcessing(false);
+      e.target.value = '';
+    }
   };
 
   const handleAddExtraImageByUrl = () => {
@@ -174,7 +199,8 @@ export const AdminProductEdit: React.FC = () => {
       additionalImages: [...(prev.additionalImages || []), extraImageUrlInput.trim()]
     }));
     setExtraImageUrlInput('');
-    showToast('Image URL added to gallery', 'success');
+    setIsDirty(true);
+    showToast('Image URL added to gallery. Click Save Changes to apply.', 'success');
   };
 
   const handleRemoveAdditionalImage = (index: number) => {
@@ -183,6 +209,8 @@ export const AdminProductEdit: React.FC = () => {
       list.splice(index, 1);
       return { ...prev, additionalImages: list };
     });
+    setIsDirty(true);
+    showToast('Image removed. Click Save Changes to persist.', 'info');
   };
 
   // Submission Validation
@@ -248,9 +276,11 @@ export const AdminProductEdit: React.FC = () => {
         updatedAt: new Date().toISOString()
       };
 
-      await saveProduct(finalProduct);
+      const saved = await saveProduct(finalProduct);
       await logAdminAction('admin@mybudgetdeal99.com', isNew ? 'Create Product' : 'Update Product', 'product', finalProduct.id, finalProduct.title);
-      showToast(`Product "${finalProduct.title}" saved successfully!`, 'success');
+      setProductData(saved);
+      setIsDirty(false);
+      showToast(`Product "${finalProduct.title}" saved successfully with ${saved.additionalImages?.length || 0} gallery images!`, 'success');
       navigate('/admin/products');
     } catch (err) {
       console.error('Error saving product', err);
@@ -291,13 +321,62 @@ export const AdminProductEdit: React.FC = () => {
 
         <button
           onClick={handleSubmit}
-          disabled={saving}
+          disabled={saving || imageProcessing}
           className="btn btn-primary"
-          style={{ padding: '0.75rem 1.75rem', fontSize: '0.95rem' }}
+          style={{ padding: '0.75rem 1.75rem', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
         >
-          {saving ? 'Saving...' : (isNew ? 'Publish to Front-End' : 'Save Changes')}
+          {saving ? <Loader2 size={16} className="spinner" /> : <Save size={16} />}
+          <span>{saving ? 'Saving...' : (isNew ? 'Publish to Front-End' : 'Save Changes')}</span>
         </button>
       </div>
+
+      {/* Image Optimization / Compression Notice */}
+      {imageProcessing && (
+        <div style={{
+          background: 'rgba(59, 130, 246, 0.15)',
+          border: '1px solid rgba(59, 130, 246, 0.4)',
+          borderRadius: 'var(--radius-lg)',
+          padding: '0.9rem 1.25rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          color: '#60a5fa',
+          fontSize: '0.9rem'
+        }}>
+          <Loader2 size={18} className="spinner" />
+          <span>Compressing & preparing your image(s) for instant loading and safe storage...</span>
+        </div>
+      )}
+
+      {/* Unsaved Changes Alert */}
+      {isDirty && !imageProcessing && (
+        <div style={{
+          background: 'rgba(245, 158, 11, 0.15)',
+          border: '1px solid rgba(245, 158, 11, 0.4)',
+          borderRadius: 'var(--radius-lg)',
+          padding: '0.9rem 1.25rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1rem',
+          flexWrap: 'wrap'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#fbbf24', fontSize: '0.9rem' }}>
+            <AlertCircle size={18} />
+            <span><strong>Unsaved Changes:</strong> You have added/removed images or edited fields. Click <strong>Save Changes</strong> to publish them to the live website!</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={saving}
+            className="btn btn-primary btn-sm"
+            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 1rem' }}
+          >
+            <Save size={14} />
+            <span>Save Now</span>
+          </button>
+        </div>
+      )}
 
       {/* Main Simplified Form */}
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
@@ -453,10 +532,11 @@ export const AdminProductEdit: React.FC = () => {
                 cursor: 'pointer'
               }}>
                 <Upload size={16} />
-                <span>Upload Main Image from Device</span>
+                <span>{imageProcessing ? 'Optimizing Image...' : 'Upload Main Image from Device'}</span>
                 <input
                   type="file"
                   accept="image/*"
+                  disabled={imageProcessing}
                   onChange={handleMainImageUpload}
                   style={{ display: 'none' }}
                 />
@@ -546,11 +626,12 @@ export const AdminProductEdit: React.FC = () => {
                 cursor: 'pointer'
               }}>
                 <Upload size={15} />
-                <span>Upload More Images</span>
+                <span>{imageProcessing ? 'Compressing Images...' : 'Upload More Images'}</span>
                 <input
                   type="file"
                   multiple
                   accept="image/*"
+                  disabled={imageProcessing}
                   onChange={handleAdditionalImageUpload}
                   style={{ display: 'none' }}
                 />

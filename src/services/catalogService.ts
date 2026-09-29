@@ -30,6 +30,7 @@ import {
   initialHomepageSections,
   initialSiteSettings
 } from '../data/seedData';
+import { idbGet, idbSet } from '../utils/idbStorage';
 
 // Local storage keys for resilient offline/fallback state
 const LS_PRODUCTS = 'mbd_products_v3';
@@ -48,9 +49,20 @@ try {
   }
 } catch (e) {}
 
+// Hydrate safeStorage from IndexedDB in browser environment
+if (typeof window !== 'undefined') {
+  idbGet<Product[]>(LS_PRODUCTS).then(saved => {
+    if (saved && saved.length > 0) {
+      try {
+        safeStorage.setItem(LS_PRODUCTS, JSON.stringify(saved));
+      } catch (_) {}
+    }
+  }).catch(() => {});
+}
+
 // Cache memory map for low Firestore reads (Free Tier Optimization Phase 25)
 const memoryCache: { [key: string]: { data: any; expiry: number } } = {};
-const CACHE_TTL_MS = 60 * 1000; // 1 minute in-memory cache
+const CACHE_TTL_MS = 30 * 1000; // 30 seconds in-memory cache
 
 function getCached<T>(key: string): T | null {
   const item = memoryCache[key];
@@ -107,6 +119,8 @@ function setLocalFallback<T>(key: string, data: T[]) {
   } catch (e) {
     console.error('Error saving to storage fallback:', e);
   }
+  // Also asynchronously persist to IndexedDB for unlimited capacity
+  idbSet(key, data).catch(() => {});
 }
 
 // Timeout wrapper preventing long connection delays when Firestore API is pending initialization
@@ -144,13 +158,29 @@ export async function getProducts(filters?: FilterState): Promise<Product[]> {
       snapshot.forEach(docSnap => {
         products.push({ id: docSnap.id, ...(docSnap.data() as any) });
       });
-    } else {
-      products = getLocalFallback(LS_PRODUCTS, initialProducts);
     }
   } catch (err) {
     // Graceful offline/permission fallback
-    products = getLocalFallback(LS_PRODUCTS, initialProducts);
   }
+
+  // Merge Firestore products with local fallback (preserves locally edited products and newly added images)
+  const locals = getLocalFallback(LS_PRODUCTS, initialProducts);
+  const productMap = new Map<string, Product>();
+
+  // Start with Firestore products
+  products.forEach(p => productMap.set(p.id, p));
+
+  // Merge local items: keep local if missing from Firestore or if local updatedAt is newer
+  locals.forEach(lp => {
+    const existing = productMap.get(lp.id);
+    if (!existing) {
+      productMap.set(lp.id, lp);
+    } else if (lp.updatedAt && existing.updatedAt && new Date(lp.updatedAt).getTime() > new Date(existing.updatedAt).getTime()) {
+      productMap.set(lp.id, { ...existing, ...lp });
+    }
+  });
+
+  products = Array.from(productMap.values());
 
   // Client-side filtering & sorting
   let filtered = [...products];
@@ -249,26 +279,31 @@ export async function checkProductDuplicate(asin: string, id?: string): Promise<
 
 export async function saveProduct(product: Product): Promise<Product> {
   clearCatalogCache();
-  try {
-    const docRef = doc(db, 'products', product.id);
-    await setDoc(docRef, {
-      ...product,
-      updatedAt: new Date().toISOString()
-    }, { merge: true });
-  } catch (err) {
-    // Update local storage fallback
-  }
+  const now = new Date().toISOString();
+  const productToSave: Product = {
+    ...product,
+    updatedAt: now
+  };
 
+  // 1. Immediately persist locally (localStorage + IndexedDB) so the browser has it instantly
   const locals = getLocalFallback(LS_PRODUCTS, initialProducts);
   const idx = locals.findIndex(p => p.id === product.id);
   if (idx >= 0) {
-    locals[idx] = { ...product, updatedAt: new Date().toISOString() };
+    locals[idx] = productToSave;
   } else {
-    locals.unshift({ ...product, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    locals.unshift({ ...productToSave, createdAt: productToSave.createdAt || now });
   }
   setLocalFallback(LS_PRODUCTS, locals);
 
-  return product;
+  // 2. Persist to Firestore
+  try {
+    const docRef = doc(db, 'products', productToSave.id);
+    await setDoc(docRef, productToSave, { merge: true });
+  } catch (err) {
+    console.error('Firestore saveProduct error:', err);
+  }
+
+  return productToSave;
 }
 
 export async function deleteProduct(productId: string): Promise<void> {
