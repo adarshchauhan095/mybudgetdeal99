@@ -118,24 +118,24 @@ describe('Phase 38 — Catalog, Product CRUD, Search & Filtering', () => {
   });
 
   it('finds product by dynamic slug', async () => {
-    const prod = await getProductBySlug('ergonomic-eye-care-led-desk-lamp');
+    const prod = await getProductBySlug('un1que-foldable-water-dispenser-pump-20l');
     expect(prod).not.toBeNull();
-    expect(prod?.asin).toBe('B08N5WRW11');
+    expect(prod?.asin).toBe('B0GF2632JB');
   });
 
   it('detects duplicate ASINs in catalog', async () => {
-    const duplicate = await checkProductDuplicate('B08N5WRW11');
+    const duplicate = await checkProductDuplicate('B0GF2632JB');
     expect(duplicate).not.toBeNull();
-    expect(duplicate?.id).toBe('prod-desk-lamp-01');
+    expect(duplicate?.id).toBe('prod-water-dispenser-01');
 
     const brandNew = await checkProductDuplicate('B099999999');
     expect(brandNew).toBeNull();
   });
 
   it('filters products by category and subcategory', async () => {
-    const autoProds = await getProducts({ categorySlug: 'automotive' });
-    expect(autoProds.length).toBeGreaterThan(0);
-    expect(autoProds.every(p => p.categorySlug === 'automotive')).toBe(true);
+    const elecProds = await getProducts({ categorySlug: 'electronics' });
+    expect(elecProds.length).toBeGreaterThan(0);
+    expect(elecProds.every(p => p.categorySlug === 'electronics')).toBe(true);
   });
 
   it('filters products by deals and discounts', async () => {
@@ -148,11 +148,11 @@ describe('Phase 38 — Catalog, Product CRUD, Search & Filtering', () => {
   });
 
   it('supports multi-field keyword search', async () => {
-    const searchVacuum = await getProducts({ searchQuery: 'vacuum' });
-    expect(searchVacuum.length).toBeGreaterThan(0);
-    expect(searchVacuum[0].title.toLowerCase()).toContain('vacuum');
+    const searchDispenser = await getProducts({ searchQuery: 'dispenser' });
+    expect(searchDispenser.length).toBeGreaterThan(0);
+    expect(searchDispenser[0].title.toLowerCase()).toContain('dispenser');
 
-    const searchBrand = await getProducts({ searchQuery: 'LuminoTech' });
+    const searchBrand = await getProducts({ searchQuery: 'Portronics' });
     expect(searchBrand.length).toBeGreaterThan(0);
 
     const noResult = await getProducts({ searchQuery: 'xyznonexistentword99' });
@@ -216,9 +216,9 @@ describe('Phase 38 — Curated Setups & Collections (System B)', () => {
     const collections = await getCollections();
     expect(collections.length).toBeGreaterThan(0);
 
-    const studySetup = await getCollectionBySlug('complete-study-table-setup');
+    const studySetup = await getCollectionBySlug('transparent-tech-setup');
     expect(studySetup).not.toBeNull();
-    expect(studySetup?.title).toBe('Complete Study Table Setup');
+    expect(studySetup?.title).toBe('Transparent Tech & Modern Desk Setup');
     expect(studySetup?.productIds?.length).toBeGreaterThan(0);
     expect(studySetup?.buyingChecklist?.length).toBeGreaterThan(0);
     expect(studySetup?.editorialTips?.length).toBeGreaterThan(0);
@@ -234,7 +234,7 @@ describe('Phase 38 — Curated Setups & Collections (System B)', () => {
       coverImage: 'https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd',
       categorySlug: 'home-and-kitchen',
       tags: ['coffee', 'kitchen'],
-      productIds: ['prod-kitchen-organizer-10'],
+      productIds: ['prod-water-dispenser-01'],
       buyingChecklist: ['Measure counter width'],
       isFeatured: true,
       status: 'active',

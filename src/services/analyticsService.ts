@@ -85,10 +85,11 @@ export async function getAnalyticsSummary(): Promise<AnalyticsSummary> {
 
   // Aggregate product views and CTA clicks
   const productMap: Record<string, { title: string; views: number; clicks: number }> = {
-    'prod-desk-lamp-01': { title: 'Ergonomic Eye-Care LED Desk Lamp', views: 56, clicks: 19 },
-    'prod-car-vacuum-06': { title: 'High-Power Cordless Car Vacuum Cleaner', views: 42, clicks: 12 },
-    'prod-laptop-stand-02': { title: 'Adjustable Aluminum Laptop Stand', views: 35, clicks: 8 },
-    'prod-tire-inflator-11': { title: 'Portable Digital Electric Tire Inflator', views: 28, clicks: 7 }
+    'prod-water-dispenser-01': { title: 'UN1QUE Foldable Water Dispenser Pump', views: 56, clicks: 19 },
+    'prod-snapcase-07': { title: 'Portronics SnapCase 3 60W Cable Kit', views: 48, clicks: 17 },
+    'prod-mouse-toad8-03': { title: 'Portronics Toad 8 Transparent Mouse', views: 42, clicks: 14 },
+    'prod-skyvik-tripod-06': { title: 'SKYVIK SIGNIPOD 1.75m Mobile Tripod', views: 35, clicks: 11 },
+    'prod-echo-dot-09': { title: 'Amazon Echo Dot (5th Gen)', views: 28, clicks: 8 }
   };
 
   events.forEach(e => {
@@ -107,17 +108,18 @@ export async function getAnalyticsSummary(): Promise<AnalyticsSummary> {
     .slice(0, 5);
 
   const topCollections = [
-    { slug: 'complete-study-table-setup', title: 'Complete Study Table Setup', views: 88 },
-    { slug: 'car-essentials', title: 'Complete Car Essentials Setup', views: 64 },
-    { slug: 'work-from-home-setup', title: 'Work From Home Setup', views: 42 }
+    { slug: 'transparent-tech-setup', title: 'Transparent Tech & Modern Desk Setup', views: 88 },
+    { slug: 'content-creator-setup', title: 'Content Creator & Mobile Studio Kit', views: 64 },
+    { slug: 'kitchen-essentials', title: 'Smart Kitchen & Nutrition Prep Setup', views: 52 },
+    { slug: 'home-organization', title: 'Vanity & Home Space-Saving Organizers', views: 42 }
   ];
 
   const searchMap: Record<string, number> = {
-    'desk lamp': 12,
-    'car vacuum': 9,
-    'laptop stand': 8,
-    'organizer': 6,
-    'fast charger': 4
+    'water dispenser': 14,
+    'transparent mouse': 11,
+    'tripod': 9,
+    'makeup organizer': 8,
+    'kitchen scale': 6
   };
 
   events.filter(e => e.eventType === 'search').forEach(e => {
