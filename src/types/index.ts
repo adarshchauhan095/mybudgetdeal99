@@ -9,6 +9,7 @@ export interface Product {
   title: string;
   shortTitle?: string;
   slug: string;
+  hookLine?: string; // Emotional hook / why customer needs this / FOMO benefit
   description: string;
   editorialReview?: string;
   highlights: string[];

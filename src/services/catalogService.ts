@@ -32,17 +32,17 @@ import {
 } from '../data/seedData';
 
 // Local storage keys for resilient offline/fallback state
-const LS_PRODUCTS = 'mbd_products_v2';
+const LS_PRODUCTS = 'mbd_products_v3';
 const LS_COLLECTIONS = 'mbd_collections_v2';
 const LS_CATEGORIES = 'mbd_categories_v2';
 const LS_DEALS = 'mbd_deals_v2';
 const LS_SECTIONS = 'mbd_sections_v2';
 const LS_SETTINGS = 'mbd_settings_v2';
 
-// Clear legacy v1 dummy cache if in browser environment
+// Clear legacy dummy cache if in browser environment
 try {
   if (typeof localStorage !== 'undefined') {
-    ['mbd_products_v1', 'mbd_collections_v1', 'mbd_deals_v1', 'mbd_categories_v1', 'mbd_sections_v1'].forEach(k => {
+    ['mbd_products_v1', 'mbd_products_v2', 'mbd_collections_v1', 'mbd_deals_v1', 'mbd_categories_v1', 'mbd_sections_v1'].forEach(k => {
       localStorage.removeItem(k);
     });
   }

@@ -76,6 +76,7 @@ export const initialProducts: Product[] = [
     title: "UN1QUE Foldable Water Dispenser Pump for 20 Litre Bottle, Wireless Type-C Rechargeable Automatic Water Can Pump with 1.35L/Min Fast Flow",
     shortTitle: "UN1QUE Foldable Water Dispenser Pump",
     slug: "un1que-foldable-water-dispenser-pump-20l",
+    hookLine: "Lifting and inverting 20kg water cans every week strains your back and causes messy floor spills. Without this smart automatic pump, you're doing hard labor for a simple glass of water. Push one button, and get clean, dust-free water effortlessly.",
     description: "Compact, wireless, and hygienic electric water dispenser pump designed for standard 20-litre water cans. Features an innovative foldable spout that keeps dust and insects out, high-speed 1.35L/min flow rate, and long-lasting Type-C rechargeable battery.",
     editorialReview: "Our team tested this foldable water dispenser across kitchen counters and study desks. The fold-away spout mechanism is a major upgrade over traditional open-pipe pumps, preventing dust buildup when not dispensing.",
     highlights: [
@@ -127,6 +128,7 @@ export const initialProducts: Product[] = [
     title: "Konquer TimeS KTS Automatic Wireless Water Can Dispenser Pump with 304 Stainless Steel Pipe & Silicone Tube",
     shortTitle: "Konquer TimeS Wireless Water Dispenser",
     slug: "konquer-times-automatic-wireless-water-pump",
+    hookLine: "Still tipping heavy 20-litre cans or using stiff manual pumps? You're risking spilled water and unnecessary fatigue. This battery-powered pump clips right on for effortless, one-touch hydration.",
     description: "Portable battery-powered electric water pump with food-grade silicone intake tube and 304 stainless steel spout. Effortlessly dispenses water from standard 20L cans with a single push of the waterproof silicone button.",
     editorialReview: "A proven, reliable classic for dispensing water without cumbersome bottle flipping or manual hand-pumps. Dispenses smoothly and charges via standard USB.",
     highlights: [
@@ -174,6 +176,7 @@ export const initialProducts: Product[] = [
     title: "Portronics Toad 8 Transparent Wireless Bluetooth Mouse (Dual Mode BT 5.3 + 2.4GHz, 3200 DPI, Type-C Rechargeable)",
     shortTitle: "Portronics Toad 8 Transparent Mouse",
     slug: "portronics-toad-8-transparent-wireless-mouse",
+    hookLine: "Tangled cords and annoying click sounds break your concentration and clutter your desk. Upgrade to smooth, whisper-silent clicks and a futuristic transparent design that makes your desk look like a pro workstation.",
     description: "Futuristic transparent wireless mouse featuring a magnetic detachable top cover, dual wireless modes (Bluetooth 5.3 and 2.4GHz USB dongle), silent-click buttons, 4-stage DPI up to 3200, and convenient Type-C fast charging.",
     editorialReview: "The transparent cybernetic chassis gives your study or desk setup an unmistakable aesthetic edge. The silent clicks are perfect for late-night work sessions without disturbing anyone.",
     highlights: [
@@ -222,6 +225,7 @@ export const initialProducts: Product[] = [
     title: "Arctic Fox Pureview Transparent Wireless and Bluetooth Rechargeable Mouse with LED Battery Display",
     shortTitle: "Arctic Fox Pureview Wireless Mouse",
     slug: "arctic-fox-pureview-transparent-wireless-mouse",
+    hookLine: "There's nothing more frustrating than your mouse suddenly dying mid-presentation without warning. With real-time LED battery readout and silent dual Bluetooth, you never get caught unprepared again.",
     description: "Ultra-sleek transparent rechargeable mouse featuring dual Bluetooth + 2.4G wireless connectivity, real-time LED battery level indicator, whisper-quiet tactile buttons, and multi-OS compatibility across Windows, Mac, iPad, and Android.",
     editorialReview: "Having an integrated LED battery percentage display right on the mouse body completely eliminates unexpected dead battery surprises mid-workday.",
     highlights: [
@@ -269,6 +273,7 @@ export const initialProducts: Product[] = [
     title: "Kratos 28-Inch Selfie Stick Tripod Stand with Rechargeable LED Fill Light & Detachable Bluetooth Remote",
     shortTitle: "Kratos 28\" Selfie Stick Tripod",
     slug: "kratos-28-inch-selfie-stick-tripod-led-light",
+    hookLine: "Dark, grainy videos and awkward group selfies where someone is always left out ruin priceless memories. This 3-in-1 extendable stick with built-in LED fill light and wireless remote lets you capture flawless, illuminated photos anywhere.",
     description: "Versatile 3-in-1 selfie stick and desktop tripod stand extending up to 28 inches. Equipped with a rechargeable LED beauty fill light featuring two brightness modes, detachable wireless Bluetooth shutter remote, and 360° phone holder.",
     editorialReview: "The built-in dual-level LED fill light makes a noticeable difference for handheld vlogging, live streams, and makeup tutorials in dimly lit indoor spaces.",
     highlights: [
@@ -316,6 +321,7 @@ export const initialProducts: Product[] = [
     title: "SKYVIK SIGNIPOD 1.75 Metre Mobile Tripod Stand & Heavy-Duty Selfie Stick with Bluetooth Remote",
     shortTitle: "SKYVIK SIGNIPOD 1.75m Tripod",
     slug: "skyvik-signipod-1-75m-selfie-stick-tripod",
+    hookLine: "Wobbly cheap plastic tripods tip over in mild wind, risking your expensive phone screen. Get pro-grade eye-level stability at 1.75 meters with aviation aluminum and take razor-sharp videos and family portraits with zero shake.",
     description: "Pro-grade 1.75 meter (5.74 ft) extendable tripod stand and selfie stick crafted from rigid aluminum alloy. Designed for content creators, live streamers, and vloggers with an umbrella-style anti-shake base, detachable remote, and standard 1/4-inch screw mount.",
     editorialReview: "This is the gold standard for portable mobile tripods. Reaching 1.75m at eye level with wide umbrella-braced legs, it remains rock steady even outdoors.",
     highlights: [
@@ -366,6 +372,7 @@ export const initialProducts: Product[] = [
     title: "Portronics SnapCase 3 60W Multifunctional Fast Charging Cable Kit with Multi-Connectors & SIM Ejector",
     shortTitle: "Portronics SnapCase 3 Cable Kit",
     slug: "portronics-snapcase-3-60w-cable-kit",
+    hookLine: "Searching for different cables every time your phone, earbuds, or laptop battery dies is pure headache. Ditch tangled cords and carry every connector plus a SIM ejector in one slim credit-card case.",
     description: "Compact survival cable kit delivering 60W Type-C fast charging. Includes Type-C to Type-C cable, 3 conversion adapters (Lightning, USB-A, Micro-USB), SIM card slots, and built-in SIM eject pin inside an ultra-slim pocket carrying case.",
     editorialReview: "The single best everyday carry gadget for tech travelers. Replaces five messy tangled cords with a tidy credit-card sized magnetic case.",
     highlights: [
@@ -415,6 +422,7 @@ export const initialProducts: Product[] = [
     title: "AGARO SnapCase 6-in-1 Multifunctional 60W Fast Charging Kit with Built-in Mirror & Phone Stand",
     shortTitle: "AGARO SnapCase 6-in-1 Kit",
     slug: "agaro-snapcase-6-in-1-fast-charging-kit",
+    hookLine: "Getting stranded with 1% battery and nobody having your specific charger ruins your whole day. This pocket toolkit powers any device at 60W and props up your phone for hands-free video calls anywhere.",
     description: "All-in-one travel charging solution offering 60W high-speed charging, Type-C, Lightning, USB-A and Micro-USB adapters, integrated vanity mirror, slide-out phone stand, and SIM ejector tool in a sleek circular black case.",
     editorialReview: "A clever dual-purpose travel companion that doubles as a phone stand for train or flight video watching while keeping all charging connectors organized.",
     highlights: [
@@ -462,6 +470,7 @@ export const initialProducts: Product[] = [
     title: "Amazon Echo Dot (5th Gen) Smart Speaker with Alexa, Deeper Bass, Motion Detection & Temperature Sensor",
     shortTitle: "Amazon Echo Dot (5th Gen)",
     slug: "amazon-echo-dot-5th-gen-smart-speaker",
+    hookLine: "Waking up to harsh alarms and constantly getting out of bed to switch off lights disrupts your rest. Let Alexa manage your mornings, play soothing music, and control your room hands-free with simple voice commands.",
     description: "The best sounding Echo Dot yet with clearer vocals, deeper bass, and vibrant sound in any room. Features hands-free Alexa voice assistance in English and Hindi, built-in indoor temperature sensor, motion detection for smart routines, and Bluetooth playback.",
     editorialReview: "The 5th Gen driver upgrade produces surprisingly rich acoustics with punchy low end for its compact size. Controlling smart lights and streaming Spotify hands-free makes everyday living so much smoother.",
     highlights: [
@@ -511,6 +520,7 @@ export const initialProducts: Product[] = [
     title: "Tribit XSound Plus 2 30W Portable Bluetooth 5.3 Speaker with Runstretch 24H Battery & IPX7 Waterproofing",
     shortTitle: "Tribit XSound Plus 2 Speaker",
     slug: "tribit-xsound-plus-2-portable-bluetooth-speaker",
+    hookLine: "Flat, tinny phone audio ruins your favorite tracks and gatherings. Experience deep, room-shaking 30W bass and 24-hour non-stop battery that turns any shower, bedroom, or party into a live concert experience.",
     description: "Powerhouse 30W wireless speaker featuring dual neodymium drivers, patented XBass dynamic bass technology, Bluetooth 5.3, Runstretch 24-hour continuous battery life, IPX7 complete waterproof submersion protection, and custom EQ tuning via the Tribit app.",
     editorialReview: "Punches way above its price class. The 30W output and signature XBass produce room-filling sound with remarkable clarity that rivals speakers twice its price.",
     highlights: [
@@ -559,6 +569,7 @@ export const initialProducts: Product[] = [
     title: "MBCARE Heavy-Duty Stainless Steel Dish & Bakeware Organizer Rack for Kitchen Cabinets & Countertops",
     shortTitle: "MBCARE Stainless Steel Dish Rack",
     slug: "mbcare-stainless-steel-dish-bakeware-rack",
+    hookLine: "Piling wet plates on top of each other causes chipped crockery, trapped moisture, and annoying kitchen clatter. Store dishes upright so they dry instantly and you can grab any plate in one second.",
     description: "Compact freestanding kitchen dish and bakeware organizer crafted from heavy-gauge rustproof stainless steel. Neatly holds up to 10 plates, lids, cutting boards, trays, and baking sheets vertically to optimize cabinet space.",
     editorialReview: "Eliminates noisy plate stacking and prevents ceramic chipping. Storing plates vertically makes grabbing the exact dish you need instantaneous.",
     highlights: [
@@ -606,6 +617,7 @@ export const initialProducts: Product[] = [
     title: "Aditya Polymers Adjustable Plastic Shoe Organizer Slots – Pack of 12 (6 Black + 6 White) Double Deck Space Savers",
     shortTitle: "Aditya Polymers Shoe Organizers (12-Pack)",
     slug: "aditya-polymers-adjustable-shoe-organizer-slots-12pack",
+    hookLine: "Shoes piled on the floor look chaotic and ruin expensive leather and sneakers. Double your closet and rack storage instantly with these tiered slots, keeping every pair neatly visible and protected.",
     description: "Clever double-deck shoe organizer slots that instantly double closet and shoe rack storage capacity. Features 3-level adjustable height snaps accommodating sneakers, formal shoes, heels, flats, and sandals made of durable virgin PP plastic.",
     editorialReview: "Doubled our shoe rack capacity in ten minutes flat. The adjustable height clicks easily into place and locks securely without slipping.",
     highlights: [
@@ -654,6 +666,7 @@ export const initialProducts: Product[] = [
     title: "Boniry Countertop Cosmetic Makeup Organizer Box with Dustproof Transparent Cover & 3 Storage Drawers",
     shortTitle: "Boniry Dustproof Makeup Organizer",
     slug: "boniry-dustproof-cosmetic-makeup-organizer-box",
+    hookLine: "Expensive serums and cosmetics gathering bathroom dust and humidity degrades your skincare. Keep your prized beauty collection 100% dust-free and turn your dressing table into a high-end vanity display.",
     description: "Luxury vanity countertop cosmetics organizer box featuring a large top dome with clear dustproof flip cover, 3 smooth pull-out drawers, and gold-trimmed accents. Elegantly stores tall skincare bottles, serums, perfumes, lipsticks, and jewelry.",
     editorialReview: "A stunning aesthetic upgrade for vanity counters and dressers. The transparent dome keeps skincare bottles completely dust-free while showcasing your collection beautifully.",
     highlights: [
@@ -702,6 +715,7 @@ export const initialProducts: Product[] = [
     title: "HOUSE VIPA 360° Rotating Cosmetic Makeup Organizer Display Case with Multi-Compartment Drawers",
     shortTitle: "HOUSE VIPA 360° Rotating Makeup Organizer",
     slug: "house-vipa-360-rotating-makeup-organizer",
+    hookLine: "Rummaging through messy drawers and knocking over bottles every morning makes getting ready stressful. Spin this whisper-quiet 360° turntable and find your exact perfume or lipstick in one second.",
     description: "Whisper-quiet 360-degree rotating cosmetic organizer featuring multi-height vanity slots and built-in sliding drawers. Provides effortless 360-degree access to skincare products, perfumes, brushes, lotions, and accessories.",
     editorialReview: "Spins like silk and holds a surprising volume of daily cosmetics. Reaching for perfumes and morning skincare takes zero effort.",
     highlights: [
@@ -750,6 +764,7 @@ export const initialProducts: Product[] = [
     title: "HealthSense KS100 Digital Kitchen Weighing Scale & Smart Nutritional Calculator App with Tare Function",
     shortTitle: "HealthSense KS100 Digital Kitchen Scale",
     slug: "healthsense-ks100-digital-kitchen-nutritional-scale",
+    hookLine: "Guessing portions and calorie counts sabotages your fitness, diet, and baking results. Get exact 1g precision and smart nutrient breakdown so every single meal moves you closer to your health goals.",
     description: "Next-generation smart digital kitchen scale with Bluetooth app connectivity that calculates 24 essential nutrients including calories, protein, carbs, and fats. Features high-precision strain gauge sensors (1g to 5kg), hygienic stainless steel platform, and clear LED display.",
     editorialReview: "Essential for macro counters, fitness enthusiasts, and home bakers. Pairing with the app turns every meal weigh-in into instant macro tracking.",
     highlights: [
@@ -799,6 +814,7 @@ export const initialProducts: Product[] = [
     title: "Tata 1mg Weightwise Precision Digital Kitchen Weighing Scale (1g Accuracy, 5kg Max, Stainless Steel)",
     shortTitle: "Tata 1mg Weightwise Kitchen Scale",
     slug: "tata-1mg-weightwise-precision-kitchen-scale",
+    hookLine: "Eyeballing flour, coffee beans, or diet portions leads to failed recipes and stalled progress. This medical-grade precision scale gives you instant confidence in every recipe and meal you prepare.",
     description: "Doctor & nutritionist trusted precision digital food scale from Tata 1mg. Built with a brushed stainless steel platform, pinpoint 1g measurement precision up to 5kg, auto power-off battery saver, and tare mode for everyday diet management and baking.",
     editorialReview: "Clean, reliable, and backed by Tata 1mg quality. An indispensable tool for keto, portion control, and measuring coffee or baking recipes accurately.",
     highlights: [

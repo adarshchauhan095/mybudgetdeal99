@@ -11,7 +11,6 @@ import {
   TrendingUp,
   FolderTree,
   CheckCircle2,
-  Star,
   ExternalLink,
   Flame,
   Check
@@ -192,10 +191,10 @@ export const HomePage: React.FC = () => {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#ff9900', fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     <Sparkles size={14} />
-                    <span>Today's Spotlight Deal</span>
+                    <span>Today's Deal Spotlight</span>
                   </div>
-                  <span className="badge-prime">
-                    prime
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    {spotlightProduct.categoryName}
                   </span>
                 </div>
 
@@ -217,11 +216,8 @@ export const HomePage: React.FC = () => {
                   </div>
 
                   <div style={{ flex: 1 }}>
-                    <span style={{ fontSize: '0.72rem', color: 'var(--accent-primary)', fontWeight: 700, textTransform: 'uppercase' }}>
-                      {spotlightProduct.brand}
-                    </span>
                     <h3 style={{
-                      fontSize: '0.95rem',
+                      fontSize: '0.98rem',
                       fontWeight: 700,
                       color: '#ffffff',
                       lineHeight: 1.35,
@@ -229,15 +225,23 @@ export const HomePage: React.FC = () => {
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical',
                       overflow: 'hidden',
-                      margin: '0.2rem 0 0.4rem 0'
+                      margin: '0 0 0.4rem 0'
                     }}>
                       {spotlightProduct.title}
                     </h3>
-                    <div className="rating-pill">
-                      <Star size={13} fill="#fbbf24" stroke="none" />
-                      <span>4.4</span>
-                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 500 }}>(2,400+ reviews)</span>
-                    </div>
+                    {spotlightProduct.hookLine ? (
+                      <p style={{
+                        fontSize: '0.78rem',
+                        color: 'var(--text-secondary)',
+                        lineHeight: 1.35,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden'
+                      }}>
+                        {spotlightProduct.hookLine}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
 

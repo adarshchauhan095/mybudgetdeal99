@@ -3,100 +3,126 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   getProductBySlug,
   saveProduct,
-  getCategories,
-  getCollections,
-  checkProductDuplicate
+  getCategories
 } from '../../services/catalogService';
 import {
   parseAmazonUrl,
   buildAffiliateUrl,
-  generateSlug,
-  validateAffiliateLink
+  generateSlug
 } from '../../services/amazonService';
-import { Product, Category, Collection } from '../../types';
+import { Product, Category } from '../../types';
 import { useSite } from '../../context/SiteContext';
 import { logAdminAction } from '../../services/auditService';
 import {
   ArrowLeft,
   Sparkles,
   Link as LinkIcon,
-  ShieldCheck,
-  AlertTriangle,
-  CheckCircle2,
-  Plus,
-  Trash2,
-  ExternalLink,
-  Layers,
   Upload,
-  Image as ImageIcon,
-  X
+  X,
+  ExternalLink,
+  Flame,
+  CheckCircle2,
+  AlertCircle,
+  Plus
 } from 'lucide-react';
 
 export const AdminProductEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const isNew = !id || id === 'new';
   const navigate = useNavigate();
-  const { settings, showToast } = useSite();
+  const { settings, showToast, formatPrice } = useSite();
 
-  // Categories & Collections for assignment
   const [categories, setCategories] = useState<Category[]>([]);
-  const [collections, setCollections] = useState<Collection[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [imageError, setImageError] = useState('');
 
-  // Raw URL Importer State
-  const [importUrl, setImportUrl] = useState('');
-  const [importError, setImportError] = useState('');
-  const [duplicateWarning, setDuplicateWarning] = useState<Product | null>(null);
-
-  // Form State
+  // Simplified Form State — only the minimum essential fields
   const [productData, setProductData] = useState<Partial<Product>>({
     id: `prod-${Date.now()}`,
     asin: '',
     title: '',
-    shortTitle: '',
     slug: '',
-    description: '',
-    editorialReview: '',
-    highlights: [''],
-    brand: '',
     categorySlug: 'office-and-study',
     categoryName: 'Office & Study',
-    subcategorySlug: '',
-    tags: [],
-    collectionSlugs: [],
-    keywords: [],
     imageUrl: '',
     additionalImages: [],
     amazonUrl: '',
     affiliateUrl: '',
     currency: 'INR',
-    currentPrice: 999,
-    previousPrice: 1999,
-    discountPercentage: 50,
-    priceDisplayStatus: 'show',
-    availabilityStatus: 'in_stock',
+    previousPrice: 999, // MRP / Original price
+    currentPrice: 449,  // Discounted price
+    discountPercentage: 55,
+    hookLine: '',       // Emotional hook / FOMO / Life benefit
+    description: '',    // Main description
     status: 'active',
-    isFeatured: false,
-    isTrending: false,
-    isNew: false,
-    isDeal: false,
-    isBestseller: false,
-    isEditorsPick: false,
-    priority: 80,
-    source: 'admin_manual',
-    lastVerified: new Date().toISOString()
+    isDeal: true,
+    priceDisplayStatus: 'show',
+    availabilityStatus: 'in_stock'
   });
 
-  const [tagsInput, setTagsInput] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [imageError, setImageError] = useState('');
+  const [amazonUrlInput, setAmazonUrlInput] = useState('');
+  const [extraImageUrlInput, setExtraImageUrlInput] = useState('');
 
-  const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    getCategories().then(setCategories);
+
+    if (!isNew && id) {
+      setLoading(true);
+      getProductBySlug(id).then((p) => {
+        if (p) {
+          setProductData(p);
+          setAmazonUrlInput(p.amazonUrl || p.affiliateUrl || '');
+        }
+        setLoading(false);
+      });
+    }
+  }, [id, isNew]);
+
+  // Handle Price Changes & Auto-calculate Discount %
+  const handlePriceChange = (field: 'previousPrice' | 'currentPrice', val: number) => {
+    setProductData(prev => {
+      const prevPrice = field === 'previousPrice' ? val : (prev.previousPrice || 0);
+      const currPrice = field === 'currentPrice' ? val : (prev.currentPrice || 0);
+      let discount = prev.discountPercentage;
+      if (prevPrice > 0 && currPrice > 0 && prevPrice >= currPrice) {
+        discount = Math.round(((prevPrice - currPrice) / prevPrice) * 100);
+      }
+      return {
+        ...prev,
+        [field]: val,
+        discountPercentage: discount,
+        isDeal: (discount || 0) > 0
+      };
+    });
+  };
+
+  // Amazon URL Parser & Auto-generator
+  const handleAmazonUrlChange = (url: string) => {
+    setAmazonUrlInput(url);
+    if (!url.trim()) return;
+
+    const parsed = parseAmazonUrl(url);
+    if (parsed.isValid && parsed.asin) {
+      const affUrl = buildAffiliateUrl(parsed.asin, settings.amazonTrackingId, parsed.marketplace);
+      setProductData(prev => ({
+        ...prev,
+        asin: parsed.asin,
+        amazonUrl: parsed.canonicalUrl || url,
+        affiliateUrl: affUrl,
+        slug: prev.slug || (prev.title ? generateSlug(prev.title, parsed.asin) : generateSlug(`product-${parsed.asin}`, parsed.asin))
+      }));
+    }
+  };
+
+  // Main Image Upload Handler
+  const handleMainImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     setImageError('');
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      setImageError('Please select a valid image file (PNG, JPG, WEBP, GIF).');
+      setImageError('Please select a valid image file (PNG, JPG, WEBP).');
       showToast('Invalid file format. Please upload an image.', 'error');
       return;
     }
@@ -113,15 +139,13 @@ export const AdminProductEdit: React.FC = () => {
       if (dataUrl) {
         setProductData(prev => ({ ...prev, imageUrl: dataUrl }));
         setImageError('');
-        showToast('Product image uploaded successfully!', 'success');
+        showToast('Main product image uploaded!', 'success');
       }
-    };
-    reader.onerror = () => {
-      setImageError('Failed to read image file. Please try again.');
     };
     reader.readAsDataURL(file);
   };
 
+  // Additional Gallery Image Upload Handler (Multiple Files)
   const handleAdditionalImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -143,8 +167,14 @@ export const AdminProductEdit: React.FC = () => {
     showToast('Additional image(s) uploaded', 'success');
   };
 
-  const handleRemoveMainImage = () => {
-    setProductData(prev => ({ ...prev, imageUrl: '' }));
+  const handleAddExtraImageByUrl = () => {
+    if (!extraImageUrlInput.trim()) return;
+    setProductData(prev => ({
+      ...prev,
+      additionalImages: [...(prev.additionalImages || []), extraImageUrlInput.trim()]
+    }));
+    setExtraImageUrlInput('');
+    showToast('Image URL added to gallery', 'success');
   };
 
   const handleRemoveAdditionalImage = (index: number) => {
@@ -155,884 +185,544 @@ export const AdminProductEdit: React.FC = () => {
     });
   };
 
-  useEffect(() => {
-    Promise.all([getCategories(), getCollections()]).then(([cats, cols]) => {
-      setCategories(cats);
-      setCollections(cols);
-    });
-
-    if (!isNew && id) {
-      getProductBySlug(id).then((p) => {
-        if (p) {
-          setProductData(p);
-          setTagsInput(p.tags?.join(', ') || '');
-        }
-      });
-    }
-  }, [id, isNew]);
-
-  // Phase 33: Smart URL Import Action
-  const handleAnalyzeUrl = async () => {
-    setImportError('');
-    setDuplicateWarning(null);
-
-    const parsed = parseAmazonUrl(importUrl);
-    if (!parsed.isValid || !parsed.asin) {
-      setImportError(parsed.error || 'Could not parse Amazon ASIN from this URL');
-      return;
-    }
-
-    // Check duplicate ASIN
-    const dup = await checkProductDuplicate(parsed.asin, productData.id);
-    if (dup) {
-      setDuplicateWarning(dup);
-    }
-
-    const canonicalUrl = parsed.canonicalUrl || `https://www.${parsed.marketplace}/dp/${parsed.asin}`;
-    const affUrl = buildAffiliateUrl(parsed.asin, settings.amazonTrackingId, parsed.marketplace);
-    const suggestedTitle = parsed.suggestedTitle || productData.title || `Amazon Product (${parsed.asin})`;
-    const slug = generateSlug(suggestedTitle, parsed.asin);
-
-    setProductData(prev => ({
-      ...prev,
-      asin: parsed.asin,
-      amazonUrl: canonicalUrl,
-      affiliateUrl: affUrl,
-      title: prev.title || suggestedTitle,
-      slug: prev.slug || slug,
-      source: 'amazon_link_tool',
-      lastVerified: new Date().toISOString()
-    }));
-
-    showToast(`ASIN ${parsed.asin} extracted successfully!`, 'success');
-  };
-
-  const handleHighlightChange = (index: number, val: string) => {
-    const list = [...(productData.highlights || [])];
-    list[index] = val;
-    setProductData({ ...productData, highlights: list });
-  };
-
-  const addHighlight = () => {
-    setProductData({ ...productData, highlights: [...(productData.highlights || []), ''] });
-  };
-
-  const removeHighlight = (idx: number) => {
-    const list = [...(productData.highlights || [])];
-    list.splice(idx, 1);
-    setProductData({ ...productData, highlights: list });
-  };
-
-  const toggleCollection = (colSlug: string) => {
-    const current = productData.collectionSlugs || [];
-    const updated = current.includes(colSlug)
-      ? current.filter(s => s !== colSlug)
-      : [...current, colSlug];
-    setProductData({ ...productData, collectionSlugs: updated });
-  };
-
-  // Phase 50: Publish Checklist Validation
+  // Submission Validation
   const hasValidImage = !!productData.imageUrl && productData.imageUrl.trim().length > 10;
-
-  const checklist = [
-    { label: '10-character Amazon ASIN provided', valid: !!productData.asin && productData.asin.length === 10 },
-    { label: 'Product Title specified', valid: !!productData.title && productData.title.trim().length > 5 },
-    { label: 'Valid Special Link with Tracking ID', valid: !!productData.affiliateUrl && productData.affiliateUrl.includes('tag=') },
-    { label: 'Category department assigned', valid: !!productData.categorySlug },
-    { label: 'Mandatory Product Image uploaded or set *', valid: hasValidImage }
-  ];
-
-  const canPublish = checklist.every(c => c.valid);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!hasValidImage) {
-      setImageError('Product image is MANDATORY. Please upload an image file or provide a valid image URL.');
-      showToast('Product Image is MANDATORY. Please upload an image.', 'error');
+
+    if (!productData.title || productData.title.trim().length < 3) {
+      showToast('Please enter a clear product title', 'error');
       return;
     }
 
-    if (!canPublish) {
-      showToast('Please fix checklist requirements before publishing', 'error');
+    if (!hasValidImage) {
+      setImageError('Product image is MANDATORY. Please upload or provide an image.');
+      showToast('Main product image is mandatory', 'error');
+      return;
+    }
+
+    if (!productData.affiliateUrl && !productData.amazonUrl) {
+      showToast('Please provide an Amazon product link or ASIN', 'error');
       return;
     }
 
     setSaving(true);
     try {
-      const selectedCat = categories.find(c => c.slug === productData.categorySlug);
-      const cleanTags = tagsInput.split(',').map(t => t.trim()).filter(Boolean);
+      const selectedCategory = categories.find(c => c.slug === productData.categorySlug);
 
-      const toSave: Product = {
+      const finalProduct: Product = {
         id: productData.id || `prod-${Date.now()}`,
-        asin: productData.asin!.toUpperCase().trim(),
-        title: productData.title!,
-        shortTitle: productData.shortTitle || productData.title,
-        slug: productData.slug || generateSlug(productData.title!, productData.asin),
-        description: productData.description || 'Quality product available on Amazon.',
-        editorialReview: productData.editorialReview || '',
-        highlights: (productData.highlights || []).filter(h => h.trim().length > 0),
-        brand: productData.brand || 'Generic',
+        asin: productData.asin || 'B000000000',
+        title: productData.title.trim(),
+        shortTitle: productData.title.trim().slice(0, 60),
+        slug: productData.slug || generateSlug(productData.title, productData.asin || 'mbd'),
         categorySlug: productData.categorySlug || 'office-and-study',
-        categoryName: selectedCat ? selectedCat.name : 'Office & Study',
-        subcategorySlug: productData.subcategorySlug || undefined,
-        tags: cleanTags,
-        collectionSlugs: productData.collectionSlugs || [],
-        keywords: cleanTags,
-        imageUrl: productData.imageUrl || 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=800&q=80',
-        amazonUrl: productData.amazonUrl || `https://www.amazon.in/dp/${productData.asin}`,
-        affiliateUrl: productData.affiliateUrl || buildAffiliateUrl(productData.asin!, settings.amazonTrackingId),
-        currency: productData.currency || 'INR',
-        currentPrice: productData.currentPrice ? Number(productData.currentPrice) : undefined,
-        previousPrice: productData.previousPrice ? Number(productData.previousPrice) : undefined,
-        discountPercentage: productData.discountPercentage ? Number(productData.discountPercentage) : undefined,
-        priceDisplayStatus: productData.priceDisplayStatus || 'show',
-        availabilityStatus: productData.availabilityStatus || 'in_stock',
-        status: productData.status || 'active',
-        isFeatured: !!productData.isFeatured,
-        isTrending: !!productData.isTrending,
-        isNew: !!productData.isNew,
-        isDeal: !!productData.isDeal,
-        isBestseller: !!productData.isBestseller,
-        isEditorsPick: !!productData.isEditorsPick,
-        priority: productData.priority ? Number(productData.priority) : 80,
-        source: productData.source || 'admin_manual',
+        categoryName: selectedCategory ? selectedCategory.name : (productData.categoryName || 'General'),
+        brand: productData.brand || 'Amazon Verified',
+        imageUrl: productData.imageUrl!,
+        additionalImages: productData.additionalImages || [],
+        amazonUrl: productData.amazonUrl || productData.affiliateUrl || '',
+        affiliateUrl: productData.affiliateUrl || productData.amazonUrl || '',
+        currency: 'INR',
+        previousPrice: Number(productData.previousPrice) || undefined,
+        currentPrice: Number(productData.currentPrice) || undefined,
+        discountPercentage: Number(productData.discountPercentage) || undefined,
+        hookLine: productData.hookLine?.trim() || '',
+        description: productData.description?.trim() || '',
+        status: 'active',
+        isDeal: !!(productData.discountPercentage && productData.discountPercentage > 0),
+        isFeatured: false,
+        isTrending: true,
+        isNew: false,
+        priceDisplayStatus: 'show',
+        availabilityStatus: 'in_stock',
+        highlights: [],
+        tags: [productData.categorySlug || 'deal'],
+        collectionSlugs: [],
+        keywords: [],
+        priority: 85,
+        source: 'admin_manual',
         lastVerified: new Date().toISOString(),
         createdAt: productData.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
 
-      await saveProduct(toSave);
-      await logAdminAction(
-        'admin@mybudgetdeal99.com',
-        isNew ? 'Create Product' : 'Update Product',
-        'product',
-        toSave.id,
-        toSave.title
-      );
-
-      showToast(isNew ? 'Product added successfully!' : 'Product updated successfully!', 'success');
+      await saveProduct(finalProduct);
+      await logAdminAction('admin@mybudgetdeal99.com', isNew ? 'Create Product' : 'Update Product', 'product', finalProduct.id, finalProduct.title);
+      showToast(`Product "${finalProduct.title}" saved successfully!`, 'success');
       navigate('/admin/products');
-    } catch (err: any) {
-      showToast(`Save failed: ${err?.message}`, 'error');
+    } catch (err) {
+      console.error('Error saving product', err);
+      showToast('Failed to save product. Please try again.', 'error');
     } finally {
       setSaving(false);
     }
   };
 
+  if (loading) {
+    return (
+      <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+        Loading product details...
+      </div>
+    );
+  }
+
+  const savingsAmount = (productData.previousPrice || 0) - (productData.currentPrice || 0);
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', maxWidth: '1000px' }}>
+    <div style={{ maxWidth: '900px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       
-      {/* Top Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <button onClick={() => navigate('/admin/products')} className="card-action-btn" title="Back to products">
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <Link to="/admin/products" className="card-action-btn" title="Back to products list">
             <ArrowLeft size={18} />
-          </button>
+          </Link>
           <div>
             <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#ffffff' }}>
-              {isNew ? 'Add Product to Catalog' : 'Edit Catalog Product'}
+              {isNew ? 'Add New Product' : 'Edit Product'}
             </h1>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-              Phase 33 Smart Importer with ASIN verification and duplicate detection
+              Only the actual essential details shown to customers during purchase
             </p>
           </div>
         </div>
 
         <button
           onClick={handleSubmit}
-          disabled={saving || !canPublish}
+          disabled={saving}
           className="btn btn-primary"
+          style={{ padding: '0.75rem 1.75rem', fontSize: '0.95rem' }}
         >
-          <span>{saving ? 'Publishing...' : 'Save & Publish Product'}</span>
-          <CheckCircle2 size={16} />
+          {saving ? 'Saving...' : (isNew ? 'Publish to Front-End' : 'Save Changes')}
         </button>
       </div>
 
-      {/* Phase 33: Paste Amazon URL Quick Importer */}
-      {isNew && (
+      {/* Main Simplified Form */}
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+
+        {/* 1. Product Title & Amazon URL */}
         <div style={{
           background: 'var(--bg-card)',
-          border: '1px solid var(--border-medium)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '1.5rem',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-xl)',
+          padding: '1.75rem',
           display: 'flex',
           flexDirection: 'column',
-          gap: '1rem'
+          gap: '1.25rem'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-primary)', fontWeight: 700, fontSize: '0.95rem' }}>
-            <LinkIcon size={18} />
-            <span>Step 1: Paste Amazon Product URL to Auto-Extract ASIN</span>
-          </div>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#ffffff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span>1. Product Identity & Amazon Link</span>
+          </h2>
 
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.4rem' }}>
+              Product Title * (What customer reads)
+            </label>
             <input
               type="text"
-              placeholder="Paste URL e.g. https://www.amazon.in/dp/B08N5WRW11 or amzn.to/..."
-              value={importUrl}
-              onChange={(e) => setImportUrl(e.target.value)}
-              style={{ flex: 1 }}
+              placeholder="e.g. Automatic Wireless Water Can Dispenser Pump with USB Charging"
+              value={productData.title || ''}
+              onChange={(e) => setProductData({ ...productData, title: e.target.value, slug: generateSlug(e.target.value, productData.asin || 'mbd') })}
+              required
+              style={{ width: '100%', fontSize: '1rem', fontWeight: 600 }}
             />
-            <button
-              type="button"
-              onClick={handleAnalyzeUrl}
-              className="btn btn-secondary"
-            >
-              <span>Analyze & Extract</span>
-              <Sparkles size={16} color="var(--accent-primary)" />
-            </button>
           </div>
 
-          {importError && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#f87171', fontSize: '0.85rem' }}>
-              <AlertTriangle size={15} />
-              <span>{importError}</span>
-            </div>
-          )}
-
-          {duplicateWarning && (
-            <div style={{
-              background: 'rgba(245, 158, 11, 0.12)',
-              border: '1px solid rgba(245, 158, 11, 0.3)',
-              borderRadius: 'var(--radius-md)',
-              padding: '0.75rem 1rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              fontSize: '0.85rem',
-              color: '#fbbf24'
-            }}>
-              <div>
-                <strong>Duplicate Warning:</strong> ASIN <code>{duplicateWarning.asin}</code> already exists as "{duplicateWarning.title}".
-              </div>
-              <Link to={`/admin/products/edit/${duplicateWarning.id}`} style={{ textDecoration: 'underline', fontWeight: 600 }}>
-                Edit Existing Product →
-              </Link>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Main Form */}
-      <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
-        
-        {/* Left Column: Core Fields */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          
-          {/* Card: Core Information */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#ffffff', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
-              Core Product Information
-            </h3>
-
+          <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1rem' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.35rem' }}>
-                Full Product Title *
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.4rem' }}>
+                Amazon Product URL / Affiliate Link *
               </label>
-              <input
-                type="text"
-                value={productData.title || ''}
-                onChange={(e) => setProductData({ ...productData, title: e.target.value })}
-                style={{ width: '100%' }}
-                required
-              />
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.35rem' }}>
-                  Short Title (for cards)
-                </label>
+              <div style={{ position: 'relative' }}>
+                <LinkIcon size={16} color="var(--accent-primary)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="text"
-                  value={productData.shortTitle || ''}
-                  onChange={(e) => setProductData({ ...productData, shortTitle: e.target.value })}
-                  style={{ width: '100%' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.35rem' }}>
-                  Brand Name *
-                </label>
-                <input
-                  type="text"
-                  value={productData.brand || ''}
-                  onChange={(e) => setProductData({ ...productData, brand: e.target.value })}
-                  style={{ width: '100%' }}
+                  placeholder="https://www.amazon.in/dp/B07YZ367F6?tag=mybudgetdeal9-21..."
+                  value={amazonUrlInput}
+                  onChange={(e) => handleAmazonUrlChange(e.target.value)}
                   required
+                  style={{ width: '100%', paddingLeft: '2.5rem' }}
                 />
               </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.35rem' }}>
-                  Amazon ASIN (10 chars) *
-                </label>
-                <input
-                  type="text"
-                  value={productData.asin || ''}
-                  onChange={(e) => setProductData({ ...productData, asin: e.target.value.toUpperCase() })}
-                  maxLength={10}
-                  style={{ width: '100%', fontFamily: 'monospace' }}
-                  required
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.35rem' }}>
-                  URL Slug *
-                </label>
-                <input
-                  type="text"
-                  value={productData.slug || ''}
-                  onChange={(e) => setProductData({ ...productData, slug: e.target.value })}
-                  style={{ width: '100%' }}
-                  required
-                />
-              </div>
+              <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '0.25rem', display: 'block' }}>
+                Auto-appends your tracking tag: <code>{settings.amazonTrackingId}</code>
+              </span>
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.35rem' }}>
-                Canonical Amazon URL
-              </label>
-              <input
-                type="text"
-                value={productData.amazonUrl || ''}
-                onChange={(e) => setProductData({ ...productData, amazonUrl: e.target.value })}
-                style={{ width: '100%', fontSize: '0.85rem' }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.35rem' }}>
-                Affiliate Special Link (with tracking ID) *
-              </label>
-              <input
-                type="text"
-                value={productData.affiliateUrl || ''}
-                onChange={(e) => setProductData({ ...productData, affiliateUrl: e.target.value })}
-                style={{ width: '100%', fontSize: '0.85rem' }}
-                required
-              />
-            </div>
-
-            {/* Mandatory Product Image Upload Section */}
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.85rem',
-              background: 'rgba(255, 255, 255, 0.02)',
-              border: imageError || (!productData.imageUrl && !isNew)
-                ? '1px dashed #ef4444'
-                : !productData.imageUrl
-                ? '1px dashed var(--accent-primary)'
-                : '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-md)',
-              padding: '1.25rem'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.9rem', fontWeight: 700, color: '#ffffff' }}>
-                  <ImageIcon size={18} color="var(--accent-primary)" />
-                  <span>Main Product Image <span style={{ color: '#ef4444' }}>* (Mandatory)</span></span>
-                </label>
-                {productData.imageUrl && (
-                  <span style={{ fontSize: '0.75rem', color: 'var(--accent-green)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                    <CheckCircle2 size={14} /> Image Attached
-                  </span>
-                )}
-              </div>
-
-              {imageError && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#f87171', fontSize: '0.8rem', background: 'rgba(239, 68, 68, 0.1)', padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)' }}>
-                  <AlertTriangle size={15} />
-                  <span>{imageError}</span>
-                </div>
-              )}
-
-              {/* Main Image Preview if exists */}
-              {productData.imageUrl ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', background: '#0e1526', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
-                  <div style={{ width: '90px', height: '90px', borderRadius: 'var(--radius-sm)', overflow: 'hidden', background: '#182238', border: '1px solid var(--border-medium)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <img
-                      src={productData.imageUrl}
-                      alt="Main Preview"
-                      style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-                      onError={() => setImageError('Failed to display image from URL. Please check the URL or upload a valid file.')}
-                    />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                    <div style={{ fontSize: '0.82rem', color: '#ffffff', fontWeight: 600, wordBreak: 'break-all' }}>
-                      {productData.imageUrl.startsWith('data:') ? 'Custom Uploaded Image (Base64 Data)' : productData.imageUrl}
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                      <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer', padding: '0.35rem 0.65rem', fontSize: '0.78rem' }}>
-                        <Upload size={13} />
-                        <span>Replace File</span>
-                        <input
-                          type="file"
-                          accept="image/png, image/jpeg, image/webp, image/gif"
-                          onChange={handleImageFileUpload}
-                          style={{ display: 'none' }}
-                        />
-                      </label>
-                      <button
-                        type="button"
-                        onClick={handleRemoveMainImage}
-                        className="btn btn-sm"
-                        style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '0.35rem 0.65rem', fontSize: '0.78rem' }}
-                      >
-                        <Trash2 size={13} />
-                        <span>Remove Image</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                /* Drag & Drop Upload Zone */
-                <label style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.65rem',
-                  padding: '2rem 1.5rem',
-                  border: '2px dashed var(--accent-primary)',
-                  borderRadius: 'var(--radius-md)',
-                  background: 'rgba(249, 115, 22, 0.04)',
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                  transition: 'background 0.2s ease'
-                }}>
-                  <div style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '50%',
-                    background: 'var(--accent-light)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'var(--accent-primary)'
-                  }}>
-                    <Upload size={22} />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#ffffff' }}>
-                      Click to upload product image file
-                    </div>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
-                      Supports PNG, JPG, WEBP, GIF up to 5 MB
-                    </div>
-                  </div>
-                  <input
-                    type="file"
-                    accept="image/png, image/jpeg, image/webp, image/gif"
-                    onChange={handleImageFileUpload}
-                    style={{ display: 'none' }}
-                  />
-                </label>
-              )}
-
-              {/* Direct URL input fallback */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginTop: '0.25rem' }}>
-                <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>
-                  Or paste direct image URL (e.g. Amazon CDN):
-                </span>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <input
-                    type="url"
-                    value={productData.imageUrl || ''}
-                    onChange={(e) => {
-                      setProductData({ ...productData, imageUrl: e.target.value });
-                      setImageError('');
-                    }}
-                    placeholder="https://m.media-amazon.com/images/I/..."
-                    style={{ flex: 1, fontSize: '0.85rem' }}
-                  />
-                  {productData.imageUrl && (
-                    <button
-                      type="button"
-                      onClick={() => window.open(productData.imageUrl, '_blank')}
-                      className="btn btn-secondary btn-sm"
-                      title="Open image in new tab"
-                    >
-                      <ExternalLink size={14} />
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Additional Gallery Images */}
-              <div style={{ marginTop: '0.75rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.75rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                    Additional Gallery Images ({productData.additionalImages?.length || 0})
-                  </span>
-                  <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer', padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>
-                    <Plus size={13} />
-                    <span>Add Gallery Image</span>
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      onChange={handleAdditionalImageUpload}
-                      style={{ display: 'none' }}
-                    />
-                  </label>
-                </div>
-
-                {productData.additionalImages && productData.additionalImages.length > 0 && (
-                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                    {productData.additionalImages.map((imgUrl, i) => (
-                      <div key={i} style={{ position: 'relative', width: '56px', height: '56px', borderRadius: 'var(--radius-sm)', overflow: 'hidden', background: '#111827', border: '1px solid var(--border-subtle)' }}>
-                        <img src={imgUrl} alt={`Gallery ${i}`} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveAdditionalImage(i)}
-                          style={{
-                            position: 'absolute',
-                            top: '2px',
-                            right: '2px',
-                            width: '18px',
-                            height: '18px',
-                            borderRadius: '50%',
-                            background: 'rgba(239, 68, 68, 0.9)',
-                            color: '#ffffff',
-                            border: 'none',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                          }}
-                        >
-                          <X size={10} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Card: Phase 46 Content Isolation (Editorial vs Amazon) */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-primary)', fontWeight: 700, fontSize: '1rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
-              <Sparkles size={16} />
-              <span>Editorial Review vs Manufacturer Content</span>
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.35rem' }}>
-                Our Editorial Assessment (Why we recommend it)
-              </label>
-              <textarea
-                rows={4}
-                value={productData.editorialReview || ''}
-                onChange={(e) => setProductData({ ...productData, editorialReview: e.target.value })}
-                placeholder="Share hands-on testing notes, dimensions compatibility, and setup synergy..."
-                style={{ width: '100%', resize: 'vertical' }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.35rem' }}>
-                Standard Product Description
-              </label>
-              <textarea
-                rows={3}
-                value={productData.description || ''}
-                onChange={(e) => setProductData({ ...productData, description: e.target.value })}
-                style={{ width: '100%', resize: 'vertical' }}
-              />
-            </div>
-
-            {/* Dynamic Highlights List */}
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#ffffff' }}>
-                  Bullet Point Highlights
-                </label>
-                <button type="button" onClick={addHighlight} className="btn btn-secondary btn-sm">
-                  <Plus size={14} />
-                  <span>Add Bullet</span>
-                </button>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {productData.highlights?.map((h, i) => (
-                  <div key={i} style={{ display: 'flex', gap: '0.5rem' }}>
-                    <input
-                      type="text"
-                      value={h}
-                      onChange={(e) => handleHighlightChange(i, e.target.value)}
-                      placeholder={`Highlight #${i + 1}`}
-                      style={{ flex: 1, fontSize: '0.88rem' }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeHighlight(i)}
-                      className="card-action-btn"
-                      style={{ width: '36px', height: '36px', color: '#f87171' }}
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Pricing & Availability */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#ffffff', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
-              Pricing & Stock Status
-            </h3>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.35rem' }}>
-                  Current Price (₹ / $)
-                </label>
-                <input
-                  type="number"
-                  value={productData.currentPrice || ''}
-                  onChange={(e) => setProductData({ ...productData, currentPrice: Number(e.target.value) })}
-                  style={{ width: '100%' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.35rem' }}>
-                  Previous Price (MSRP)
-                </label>
-                <input
-                  type="number"
-                  value={productData.previousPrice || ''}
-                  onChange={(e) => setProductData({ ...productData, previousPrice: Number(e.target.value) })}
-                  style={{ width: '100%' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.35rem' }}>
-                  Discount %
-                </label>
-                <input
-                  type="number"
-                  value={productData.discountPercentage || ''}
-                  onChange={(e) => setProductData({ ...productData, discountPercentage: Number(e.target.value) })}
-                  style={{ width: '100%' }}
-                />
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.35rem' }}>
-                  Price Display Mode
-                </label>
-                <select
-                  value={productData.priceDisplayStatus || 'show'}
-                  onChange={(e) => setProductData({ ...productData, priceDisplayStatus: e.target.value as any })}
-                  style={{ width: '100%' }}
-                >
-                  <option value="show">Show Verified Price</option>
-                  <option value="check_amazon">"Check price on Amazon"</option>
-                  <option value="hide">Hide Price Completely</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.35rem' }}>
-                  Availability Status
-                </label>
-                <select
-                  value={productData.availabilityStatus || 'in_stock'}
-                  onChange={(e) => setProductData({ ...productData, availabilityStatus: e.target.value as any })}
-                  style={{ width: '100%' }}
-                >
-                  <option value="in_stock">In Stock on Amazon</option>
-                  <option value="out_of_stock">Temporarily Out of Stock</option>
-                  <option value="unknown">Unknown</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        {/* Right Column: Taxonomy, Setups & Publish Checklist */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          
-          {/* Phase 50: Publish Checklist Card */}
-          <div style={{
-            background: canPublish ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)',
-            border: canPublish ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '1.25rem'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '0.92rem', color: canPublish ? 'var(--accent-green)' : '#f87171', marginBottom: '0.75rem' }}>
-              <ShieldCheck size={18} />
-              <span>Phase 50 Publish Checklist</span>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {checklist.map((item, idx) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: item.valid ? 'var(--text-primary)' : 'var(--text-muted)' }}>
-                  {item.valid ? (
-                    <CheckCircle2 size={14} color="var(--accent-green)" />
-                  ) : (
-                    <AlertTriangle size={14} color="#f87171" />
-                  )}
-                  <span>{item.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Department / Category Selection */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#ffffff' }}>Department & Hierarchy</h4>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
-                Primary Category *
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.4rem' }}>
+                Category / Department *
               </label>
               <select
-                value={productData.categorySlug || ''}
+                value={productData.categorySlug || 'office-and-study'}
                 onChange={(e) => {
                   const cat = categories.find(c => c.slug === e.target.value);
                   setProductData({
                     ...productData,
                     categorySlug: e.target.value,
-                    categoryName: cat?.name || e.target.value,
-                    subcategorySlug: undefined
+                    categoryName: cat ? cat.name : 'General'
                   });
                 }}
                 style={{ width: '100%' }}
               >
                 {categories.map(c => (
-                  <option key={c.id} value={c.slug}>{c.name}</option>
+                  <option key={c.id} value={c.slug}>
+                    {c.name}
+                  </option>
                 ))}
               </select>
             </div>
+          </div>
+        </div>
 
-            {/* Subcategories */}
-            {categories.find(c => c.slug === productData.categorySlug)?.subcategories && (
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
-                  Subcategory
-                </label>
-                <select
-                  value={productData.subcategorySlug || ''}
-                  onChange={(e) => setProductData({ ...productData, subcategorySlug: e.target.value })}
-                  style={{ width: '100%' }}
+        {/* 2. Multiple Images of Product */}
+        <div style={{
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-xl)',
+          padding: '1.75rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1.5rem'
+        }}>
+          <div>
+            <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#ffffff' }}>
+              2. Product Images (Multiple Images Allowed)
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', marginTop: '0.2rem' }}>
+              Customers can swipe/click through all images, view on full-screen, and zoom in & out on the frontend.
+            </p>
+          </div>
+
+          {/* Main Mandatory Image */}
+          <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#ffffff', marginBottom: '0.5rem' }}>
+              Main Product Image * (Mandatory)
+            </label>
+
+            {productData.imageUrl ? (
+              <div style={{
+                position: 'relative',
+                display: 'inline-block',
+                borderRadius: 'var(--radius-lg)',
+                overflow: 'hidden',
+                border: '2px solid var(--accent-primary)',
+                marginBottom: '1rem',
+                maxHeight: '180px'
+              }}>
+                <img
+                  src={productData.imageUrl}
+                  alt="Main preview"
+                  style={{ height: '160px', width: '160px', objectFit: 'cover', display: 'block' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setProductData({ ...productData, imageUrl: '' })}
+                  style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    background: 'rgba(0,0,0,0.75)',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '50%',
+                    padding: '6px',
+                    cursor: 'pointer'
+                  }}
+                  title="Remove image"
                 >
-                  <option value="">None (Top level)</option>
-                  {categories.find(c => c.slug === productData.categorySlug)?.subcategories?.map(sc => (
-                    <option key={sc.slug} value={sc.slug}>{sc.name}</option>
-                  ))}
-                </select>
+                  <X size={16} />
+                </button>
               </div>
+            ) : null}
+
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <label style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.65rem 1.25rem',
+                background: 'rgba(255, 153, 0, 0.1)',
+                border: '1px dashed var(--accent-primary)',
+                borderRadius: 'var(--radius-md)',
+                color: 'var(--accent-primary)',
+                fontSize: '0.88rem',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}>
+                <Upload size={16} />
+                <span>Upload Main Image from Device</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleMainImageUpload}
+                  style={{ display: 'none' }}
+                />
+              </label>
+
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>or paste image URL:</span>
+
+              <input
+                type="text"
+                placeholder="https://m.media-amazon.com/images/..."
+                value={productData.imageUrl || ''}
+                onChange={(e) => {
+                  setProductData({ ...productData, imageUrl: e.target.value });
+                  setImageError('');
+                }}
+                style={{ flex: 1, minWidth: '220px' }}
+              />
+            </div>
+            {imageError && (
+              <span style={{ fontSize: '0.8rem', color: 'var(--accent-red)', marginTop: '0.4rem', display: 'block' }}>
+                {imageError}
+              </span>
             )}
           </div>
 
-          {/* Assign to Curated Setups / Collections */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-primary)', fontWeight: 700, fontSize: '0.95rem' }}>
-              <Layers size={16} />
-              <span>Assign to Curated Setups</span>
-            </div>
-            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-              Select which setups this item belongs to (enables cross-selling):
-            </p>
+          <hr style={{ border: 'none', borderTop: '1px solid var(--border-subtle)' }} />
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '180px', overflowY: 'auto' }}>
-              {collections.map(col => (
-                <label
-                  key={col.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    fontSize: '0.84rem',
-                    cursor: 'pointer',
-                    color: productData.collectionSlugs?.includes(col.slug) ? '#ffffff' : 'var(--text-secondary)'
-                  }}
+          {/* Additional Gallery Images */}
+          <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#ffffff', marginBottom: '0.5rem' }}>
+              Additional Gallery Images (Customer can scroll and zoom in/out)
+            </label>
+
+            {/* Gallery Thumbnails List */}
+            {productData.additionalImages && productData.additionalImages.length > 0 && (
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+                {productData.additionalImages.map((imgUrl, idx) => (
+                  <div key={idx} style={{
+                    position: 'relative',
+                    width: '80px',
+                    height: '80px',
+                    borderRadius: 'var(--radius-md)',
+                    overflow: 'hidden',
+                    border: '1px solid var(--border-medium)',
+                    background: '#151d2f'
+                  }}>
+                    <img
+                      src={imgUrl}
+                      alt={`Gallery ${idx + 1}`}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveAdditionalImage(idx)}
+                      style={{
+                        position: 'absolute',
+                        top: '4px',
+                        right: '4px',
+                        background: 'rgba(0,0,0,0.8)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '50%',
+                        padding: '3px',
+                        cursor: 'pointer'
+                      }}
+                      title="Remove from gallery"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <label style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.55rem 1rem',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid var(--border-medium)',
+                borderRadius: 'var(--radius-md)',
+                color: 'var(--text-primary)',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}>
+                <Upload size={15} />
+                <span>Upload More Images</span>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleAdditionalImageUpload}
+                  style={{ display: 'none' }}
+                />
+              </label>
+
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>or add URL:</span>
+
+              <div style={{ display: 'flex', gap: '0.5rem', flex: 1, minWidth: '220px' }}>
+                <input
+                  type="text"
+                  placeholder="https://..."
+                  value={extraImageUrlInput}
+                  onChange={(e) => setExtraImageUrlInput(e.target.value)}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  onClick={handleAddExtraImageByUrl}
+                  className="btn btn-secondary btn-sm"
                 >
-                  <input
-                    type="checkbox"
-                    checked={productData.collectionSlugs?.includes(col.slug)}
-                    onChange={() => toggleCollection(col.slug)}
-                    style={{ accentColor: 'var(--accent-primary)' }}
-                  />
-                  <span>{col.title}</span>
-                </label>
-              ))}
+                  <Plus size={14} />
+                  <span>Add</span>
+                </button>
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Tags & Keywords */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '1.25rem' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.35rem' }}>
-              Search Tags (comma-separated)
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. study lamp, led, desk setup, wfh"
-              value={tagsInput}
-              onChange={(e) => setTagsInput(e.target.value)}
-              style={{ width: '100%', fontSize: '0.85rem' }}
-            />
+        {/* 3. Pricing, Discount, and Savings */}
+        <div style={{
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-xl)',
+          padding: '1.75rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1.25rem'
+        }}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#ffffff' }}>
+            3. Pricing & Discount
+          </h2>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', alignItems: 'flex-end' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.4rem' }}>
+                Original Price / MRP (₹)
+              </label>
+              <input
+                type="number"
+                min="1"
+                placeholder="999"
+                value={productData.previousPrice || ''}
+                onChange={(e) => handlePriceChange('previousPrice', Number(e.target.value))}
+                style={{ width: '100%', fontSize: '1.1rem', fontWeight: 700 }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.4rem' }}>
+                Discounted Price / Customer Pays (₹) *
+              </label>
+              <input
+                type="number"
+                min="1"
+                placeholder="449"
+                value={productData.currentPrice || ''}
+                onChange={(e) => handlePriceChange('currentPrice', Number(e.target.value))}
+                required
+                style={{ width: '100%', fontSize: '1.1rem', fontWeight: 700, color: 'var(--accent-primary)' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.4rem' }}>
+                Discount % (Auto-calculated)
+              </label>
+              <div style={{
+                background: 'rgba(239, 68, 68, 0.12)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                padding: '0.75rem 1rem',
+                borderRadius: 'var(--radius-md)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                color: '#f87171',
+                fontWeight: 800,
+                fontSize: '1rem'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Flame size={18} fill="#f87171" />
+                  <span>{productData.discountPercentage || 0}% OFF</span>
+                </div>
+                {savingsAmount > 0 && (
+                  <span style={{ fontSize: '0.75rem', color: 'var(--accent-green)' }}>
+                    Save {formatPrice(savingsAmount)}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
+        </div>
 
-          {/* Flags & Badges */}
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#ffffff', marginBottom: '0.25rem' }}>Display Badges</h4>
-
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={!!productData.isDeal}
-                onChange={(e) => setProductData({ ...productData, isDeal: e.target.checked })}
-                style={{ accentColor: 'var(--accent-primary)' }}
-              />
-              <span style={{ color: '#f87171', fontWeight: 600 }}>Mark as Deal Drop</span>
-            </label>
-
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={!!productData.isFeatured}
-                onChange={(e) => setProductData({ ...productData, isFeatured: e.target.checked })}
-                style={{ accentColor: 'var(--accent-primary)' }}
-              />
-              <span>Homepage Featured</span>
-            </label>
-
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={!!productData.isTrending}
-                onChange={(e) => setProductData({ ...productData, isTrending: e.target.checked })}
-                style={{ accentColor: 'var(--accent-primary)' }}
-              />
-              <span>Trending Product</span>
-            </label>
-
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={!!productData.isEditorsPick}
-                onChange={(e) => setProductData({ ...productData, isEditorsPick: e.target.checked })}
-                style={{ accentColor: 'var(--accent-primary)' }}
-              />
-              <span>Editor's Pick</span>
-            </label>
+        {/* 4. Emotional Hook Message (FOMO / Life Benefit) */}
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(255, 153, 0, 0.08) 0%, rgba(17, 24, 39, 0.95) 100%)',
+          border: '1px solid var(--accent-primary)',
+          borderRadius: 'var(--radius-xl)',
+          padding: '1.75rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.75rem'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-primary)' }}>
+            <Sparkles size={20} />
+            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#ffffff' }}>
+              4. Emotional Hook Message (Why Customer Needs This) *
+            </h2>
           </div>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.5 }}>
+            A hook line where customer connects emotionally—showing <strong>what they are missing out on without this product</strong> and <strong>how their life or situation benefits immediately</strong> when they have it.
+          </p>
 
+          <textarea
+            rows={3}
+            placeholder="e.g. Stop straining your back and spilling water from heavy 20L jars every single day. If you don't have this, you're wasting daily energy on a tedious chore. With one press, get smooth, mess-free water in seconds right from your desk or kitchen."
+            value={productData.hookLine || ''}
+            onChange={(e) => setProductData({ ...productData, hookLine: e.target.value })}
+            required
+            style={{ width: '100%', fontSize: '0.95rem', lineHeight: 1.5 }}
+          />
+        </div>
+
+        {/* 5. Main Product Description */}
+        <div style={{
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-xl)',
+          padding: '1.75rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.75rem'
+        }}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#ffffff' }}>
+            5. Main Product Description
+          </h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+            Concise, impactful description of the build quality, materials, and real-life utility.
+          </p>
+
+          <textarea
+            rows={5}
+            placeholder="Describe the product simply and clearly for the customer..."
+            value={productData.description || ''}
+            onChange={(e) => setProductData({ ...productData, description: e.target.value })}
+            required
+            style={{ width: '100%', fontSize: '0.95rem', lineHeight: 1.5 }}
+          />
+        </div>
+
+        {/* Footer Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
+          <Link to="/admin/products" className="btn btn-outline">
+            Cancel
+          </Link>
+          <button
+            type="submit"
+            disabled={saving}
+            className="btn btn-primary"
+            style={{ padding: '0.85rem 2rem', fontSize: '1rem' }}
+          >
+            {saving ? 'Saving...' : (isNew ? 'Publish to Front-End' : 'Save Changes')}
+          </button>
         </div>
 
       </form>

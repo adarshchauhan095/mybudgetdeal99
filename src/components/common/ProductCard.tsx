@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink, Eye, Share2, ShieldCheck, Zap, Sparkles, Star, Check } from 'lucide-react';
+import { ExternalLink, Eye, Share2, ShieldCheck, Zap } from 'lucide-react';
 import { Product } from '../../types';
 import { useSite } from '../../context/SiteContext';
 import { trackEvent } from '../../services/analyticsService';
@@ -68,17 +68,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, showCollectio
               {product.discountPercentage}% OFF
             </span>
           ) : null}
-          {product.isBestseller && (
-            <span className="badge badge-bestseller">
-              ★ Bestseller
-            </span>
-          )}
-          {product.isEditorsPick && (
-            <span className="badge badge-featured">
-              <Sparkles size={11} />
-              Editor's Pick
-            </span>
-          )}
         </div>
 
         {/* Floating Quick Actions */}
@@ -106,27 +95,30 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, showCollectio
       <div className="product-card-body">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
           <span className="product-card-brand">{product.brand}</span>
-          <span className="badge-prime">
-            prime
-          </span>
+          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{product.categoryName}</span>
         </div>
 
         <Link to={`/product/${product.slug}`} title={product.title}>
           <h3 className="product-card-title">
-            {product.shortTitle || product.title}
+            {product.title}
           </h3>
         </Link>
 
-        {/* Rating and Social Proof */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.4rem 0 0.6rem 0' }}>
-          <div className="rating-pill">
-            <Star size={13} fill="#fbbf24" stroke="none" />
-            <span>4.3</span>
-          </div>
-          <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-            (1,200+ verified Amazon buyers)
-          </span>
-        </div>
+        {/* Emotional Hook Line */}
+        {product.hookLine && (
+          <p style={{
+            fontSize: '0.78rem',
+            color: 'var(--text-secondary)',
+            lineHeight: 1.4,
+            margin: '0.35rem 0 0.5rem 0',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden'
+          }}>
+            {product.hookLine}
+          </p>
+        )}
 
         {/* Pricing Row */}
         {product.priceDisplayStatus === 'show' && product.currentPrice ? (

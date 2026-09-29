@@ -75,33 +75,59 @@ export const QuickViewModal: React.FC = () => {
           <X size={20} />
         </button>
 
-        {/* Product Media */}
-        <div style={{ background: '#131b2e', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+        {/* Product Media with Thumbnails */}
+        <div style={{ background: '#131b2e', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', gap: '1rem' }}>
           <img
             src={product.imageUrl}
             alt={product.title}
-            style={{ width: '100%', maxHeight: '340px', objectFit: 'contain', borderRadius: 'var(--radius-md)' }}
+            style={{ width: '100%', maxHeight: '300px', objectFit: 'contain', borderRadius: 'var(--radius-md)' }}
           />
+
+          {product.additionalImages && product.additionalImages.length > 0 && (
+            <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', width: '100%', justifyContent: 'center' }}>
+              {[product.imageUrl, ...product.additionalImages].map((img, idx) => (
+                <div key={idx} style={{ width: '48px', height: '48px', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--border-medium)', background: '#0b0f19' }}>
+                  <img src={img} alt={`Thumb ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Product Information */}
         <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column' }}>
           <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
-            {product.brand} • {product.categoryName}
+            {product.categoryName}
           </div>
 
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#ffffff', lineHeight: 1.3, marginBottom: '1rem' }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#ffffff', lineHeight: 1.3, marginBottom: '0.75rem' }}>
             {product.title}
           </h3>
+
+          {/* Emotional Hook Line */}
+          {product.hookLine && (
+            <div style={{
+              background: 'rgba(255, 153, 0, 0.1)',
+              borderLeft: '3px solid var(--accent-primary)',
+              padding: '0.65rem 0.85rem',
+              borderRadius: '0 8px 8px 0',
+              marginBottom: '1rem',
+              fontSize: '0.85rem',
+              color: '#ffffff',
+              lineHeight: 1.5
+            }}>
+              {product.hookLine}
+            </div>
+          )}
 
           {/* Pricing */}
           {product.priceDisplayStatus === 'show' && product.currentPrice ? (
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginBottom: '1rem' }}>
-              <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ffffff', fontFamily: 'Outfit, sans-serif' }}>
+              <span style={{ fontSize: '1.6rem', fontWeight: 800, color: '#ffffff', fontFamily: 'Outfit, sans-serif' }}>
                 {formatPrice(product.currentPrice, product.currency)}
               </span>
               {product.previousPrice && (
-                <span style={{ fontSize: '0.95rem', color: 'var(--text-muted)', textDecoration: 'line-through' }}>
+                <span style={{ fontSize: '1rem', color: 'var(--text-muted)', textDecoration: 'line-through' }}>
                   {formatPrice(product.previousPrice, product.currency)}
                 </span>
               )}
@@ -114,23 +140,6 @@ export const QuickViewModal: React.FC = () => {
           ) : (
             <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1rem', fontStyle: 'italic' }}>
               Current pricing available live on Amazon
-            </div>
-          )}
-
-          {/* Highlights */}
-          {product.highlights && product.highlights.length > 0 && (
-            <div style={{ marginBottom: '1.5rem' }}>
-              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-                Key Highlights
-              </div>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                {product.highlights.slice(0, 3).map((h, i) => (
-                  <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
-                    <Check size={14} color="var(--accent-green)" style={{ marginTop: '0.2rem', flexShrink: 0 }} />
-                    <span>{h}</span>
-                  </li>
-                ))}
-              </ul>
             </div>
           )}
 
