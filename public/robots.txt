@@ -1,6 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /admin
 Disallow: /admin/
 Disallow: /admin/*
+Disallow: /admin/login
 
 Sitemap: https://adarshchauhan095.github.io/mybudgetdeal99/sitemap.xml

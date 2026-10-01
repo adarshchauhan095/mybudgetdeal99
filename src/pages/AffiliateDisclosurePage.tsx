@@ -31,7 +31,7 @@ export const AffiliateDisclosurePage: React.FC = () => {
           borderRadius: 'var(--radius-lg)',
           padding: '1.5rem',
           fontSize: '1.05rem',
-          color: '#ffffff',
+          color: 'var(--text-primary)',
           lineHeight: 1.6
         }}>
           <strong>Official Statement:</strong> "{settings.affiliateDisclosure || "As an Amazon Associate I earn from qualifying purchases."}"
@@ -39,7 +39,7 @@ export const AffiliateDisclosurePage: React.FC = () => {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', color: 'var(--text-secondary)', lineHeight: 1.7, fontSize: '0.95rem' }}>
           
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#ffffff', marginTop: '1rem' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '1rem' }}>
             What is mybudgetdeal99?
           </h2>
           <p>
@@ -49,7 +49,7 @@ export const AffiliateDisclosurePage: React.FC = () => {
             When you find a product or setup you love on our site and click "View on Amazon", you are redirected to the official Amazon website through a compliant Amazon Associates Special Link. All order fulfillment, shipping, returns, and customer service are handled completely and exclusively by Amazon.
           </p>
 
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#ffffff', marginTop: '1rem' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '1rem' }}>
             How Affiliate Commissions Work
           </h2>
           <p>
@@ -64,17 +64,17 @@ export const AffiliateDisclosurePage: React.FC = () => {
             flexDirection: 'column',
             gap: '0.75rem'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ffffff', fontWeight: 600 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-primary)', fontWeight: 600 }}>
               <CheckCircle2 size={16} color="var(--accent-green)" />
               <span>Zero extra cost to you: The price you pay on Amazon remains exactly the same whether you use our link or go directly.</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ffffff', fontWeight: 600 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-primary)', fontWeight: 600 }}>
               <CheckCircle2 size={16} color="var(--accent-green)" />
               <span>No paid bias: Products are selected based on editorial merit, utility, and verified user satisfaction.</span>
             </div>
           </div>
 
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#ffffff', marginTop: '1rem' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '1rem' }}>
             Pricing & Availability Disclaimer
           </h2>
           <p>
@@ -84,14 +84,14 @@ export const AffiliateDisclosurePage: React.FC = () => {
             Amazon updates its product listings, stock statuses, and prices dynamically. While we strive to show accurate metadata and timestamp our verification, any price, discount, or stock status shown on Amazon at the moment of your visit supersedes any information on this discovery portal.
           </p>
 
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#ffffff', marginTop: '1rem' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '1rem' }}>
             Trademark Information
           </h2>
           <p>
             Amazon, the Amazon logo, and Amazon Prime are registered trademarks of Amazon.com, Inc. or its affiliates. {settings.siteName} is not affiliated with, endorsed by, or sponsored by Amazon beyond our standard agreement as an Amazon Associate.
           </p>
 
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#ffffff', marginTop: '1rem' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '1rem' }}>
             Questions or Corrections?
           </h2>
           <p>

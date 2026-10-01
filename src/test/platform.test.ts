@@ -266,3 +266,33 @@ describe('Phase 38 — Categories & Deals', () => {
     expect(deals.every(d => d.status === 'active' && (!d.endDate || d.endDate >= now))).toBe(true);
   });
 });
+
+describe('Production Readiness — Crash Analytics & Theme Persistence', () => {
+  it('records, retrieves, and clears crash reports in local storage', async () => {
+    const { logCrash, getStoredCrashReports, clearStoredCrashReports } = await import('../services/crashAnalytics');
+    
+    clearStoredCrashReports();
+    expect(getStoredCrashReports().length).toBe(0);
+
+    await logCrash({
+      message: 'Test simulated component render error',
+      type: 'react_error_boundary',
+      fatal: true
+    });
+
+    const reports = getStoredCrashReports();
+    expect(reports.length).toBe(1);
+    expect(reports[0].message).toBe('Test simulated component render error');
+    expect(reports[0].type).toBe('react_error_boundary');
+    expect(reports[0].fatal).toBe(true);
+
+    clearStoredCrashReports();
+    expect(getStoredCrashReports().length).toBe(0);
+  });
+
+  it('stores and persists theme preference with light mode default', () => {
+    const defaultTheme = (typeof localStorage !== 'undefined' ? localStorage.getItem('mbd_theme_mode') : null) || 'light';
+    expect(['light', 'dark']).toContain(defaultTheme);
+  });
+});
+

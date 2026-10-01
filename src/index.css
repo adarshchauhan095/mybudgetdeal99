@@ -3,7 +3,67 @@
    Curated Amazon Affiliate Discovery Platform
    ========================================================================== */
 
-:root {
+/* Default Theme: Light Mode (Clean, Modern, Slate/White) */
+:root,
+[data-theme="light"] {
+  /* Color Palette */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #ffffff;
+  --bg-glass: rgba(255, 255, 255, 0.92);
+
+  /* Borders & Dividers */
+  --border-subtle: #e2e8f0;
+  --border-medium: #cbd5e1;
+  --border-focus: #f97316;
+
+  /* Typography Colors */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-inverse: #ffffff;
+
+  /* Accents & Brand */
+  --accent-primary: #f97316;       /* Warm Amazon synergy orange */
+  --accent-hover: #ea580c;
+  --accent-light: rgba(249, 115, 22, 0.1);
+  --accent-glow: rgba(249, 115, 22, 0.2);
+
+  --accent-green: #16a34a;        /* Deal & In-stock badge */
+  --accent-green-bg: #dcfce7;
+  --accent-blue: #0284c7;
+  --accent-blue-bg: #e0f2fe;
+  --accent-purple: #9333ea;
+  --accent-purple-bg: #f3e8ff;
+  --accent-red: #dc2626;
+  --accent-red-bg: #fee2e2;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-glow: 0 0 16px rgba(249, 115, 22, 0.18);
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Layout */
+  --max-width: 1280px;
+  --nav-height: 72px;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark Theme Overrides */
+[data-theme="dark"] {
   /* Color Palette */
   --bg-primary: #0b0f19;
   --bg-secondary: #111827;
@@ -24,12 +84,12 @@
   --text-inverse: #0f172a;
 
   /* Accents & Brand */
-  --accent-primary: #f97316;       /* Warm Amazon synergy orange */
+  --accent-primary: #f97316;
   --accent-hover: #ea580c;
   --accent-light: rgba(249, 115, 22, 0.12);
   --accent-glow: rgba(249, 115, 22, 0.25);
 
-  --accent-green: #10b981;        /* Deal & In-stock badge */
+  --accent-green: #10b981;
   --accent-green-bg: rgba(16, 185, 129, 0.12);
   --accent-blue: #38bdf8;
   --accent-blue-bg: rgba(56, 189, 248, 0.12);
@@ -43,21 +103,6 @@
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
   --shadow-glow: 0 0 20px var(--accent-glow);
-
-  /* Radii */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  --radius-full: 9999px;
-
-  /* Layout */
-  --max-width: 1280px;
-  --nav-height: 72px;
-
-  /* Transitions */
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Global Reset */
@@ -82,10 +127,13 @@ body {
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   background-image: 
-    radial-gradient(at 10% 20%, rgba(249, 115, 22, 0.05) 0px, transparent 50%),
-    radial-gradient(at 90% 80%, rgba(56, 189, 248, 0.04) 0px, transparent 50%);
+    radial-gradient(at 10% 20%, rgba(249, 115, 22, 0.04) 0px, transparent 50%),
+    radial-gradient(at 90% 80%, rgba(56, 189, 248, 0.03) 0px, transparent 50%);
   background-attachment: fixed;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 #root {
@@ -311,7 +359,7 @@ input:focus, textarea:focus, select:focus {
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
-  background: #151d2f;
+  background: var(--bg-tertiary);
   overflow: hidden;
 }
 
@@ -358,13 +406,14 @@ input:focus, textarea:focus, select:focus {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: rgba(15, 23, 42, 0.85);
+  background: var(--bg-card);
   backdrop-filter: blur(8px);
   color: var(--text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1px solid var(--border-medium);
+  box-shadow: var(--shadow-sm);
   transition: all var(--transition-fast);
 }
 
@@ -414,7 +463,7 @@ input:focus, textarea:focus, select:focus {
 .price-current {
   font-size: 1.2rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-primary);
   font-family: 'Outfit', sans-serif;
 }
 
@@ -436,7 +485,7 @@ input:focus, textarea:focus, select:focus {
   align-items: flex-start;
   gap: 0.75rem;
   padding: 0.85rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-tertiary);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   margin-bottom: 0.5rem;
@@ -467,8 +516,8 @@ input:focus, textarea:focus, select:focus {
   gap: 0.75rem;
   padding: 0.85rem 1.25rem;
   border-radius: var(--radius-md);
-  background: #1e293b;
-  color: #fff;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
   border: 1px solid var(--border-medium);
   box-shadow: var(--shadow-lg);
   font-size: 0.9rem;
@@ -586,13 +635,21 @@ input:focus, textarea:focus, select:focus {
 /* Hero Banner & Ambient Glow */
 .hero-wrapper {
   position: relative;
+  background: radial-gradient(circle at 80% 20%, rgba(255, 153, 0, 0.1) 0%, transparent 60%),
+              radial-gradient(circle at 10% 80%, rgba(56, 189, 248, 0.06) 0%, transparent 50%),
+              linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 3rem 2.5rem;
+  overflow: hidden;
+  box-shadow: var(--shadow-md), 0 20px 40px -15px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] .hero-wrapper {
   background: radial-gradient(circle at 80% 20%, rgba(255, 153, 0, 0.12) 0%, transparent 60%),
               radial-gradient(circle at 10% 80%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
               linear-gradient(180deg, rgba(17, 24, 39, 0.95) 0%, rgba(11, 15, 25, 0.98) 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-xl);
-  padding: 3rem 2.5rem;
-  overflow: hidden;
   box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
@@ -617,7 +674,7 @@ input:focus, textarea:focus, select:focus {
 }
 
 .hero-title-gradient {
-  background: linear-gradient(135deg, #ffffff 0%, #ffeedd 45%, #ff9900 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 45%, #ea580c 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-family: 'Outfit', sans-serif;
@@ -625,6 +682,12 @@ input:focus, textarea:focus, select:focus {
   font-weight: 800;
   line-height: 1.15;
   letter-spacing: -0.02em;
+}
+
+[data-theme="dark"] .hero-title-gradient {
+  background: linear-gradient(135deg, #ffffff 0%, #ffeedd 45%, #ff9900 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* Live Pulse Dot */
@@ -657,9 +720,9 @@ input:focus, textarea:focus, select:focus {
   gap: 0.4rem;
   padding: 0.45rem 0.9rem;
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-medium);
-  color: var(--text-primary);
+  color: var(--text-secondary);
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
@@ -668,9 +731,9 @@ input:focus, textarea:focus, select:focus {
 }
 
 .filter-pill:hover {
-  background: rgba(255, 153, 0, 0.15);
+  background: var(--accent-light);
   border-color: var(--accent-primary);
-  color: #ffffff;
+  color: var(--accent-primary);
   transform: translateY(-2px);
 }
 
@@ -709,13 +772,18 @@ input:focus, textarea:focus, select:focus {
 /* Spotlight Card */
 .spotlight-card {
   position: relative;
-  background: rgba(17, 24, 39, 0.85);
+  background: var(--bg-secondary);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 153, 0, 0.3);
+  border: 1px solid rgba(249, 115, 22, 0.3);
   border-radius: var(--radius-xl);
   padding: 1.5rem;
-  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 153, 0, 0.15);
+  box-shadow: var(--shadow-md), 0 0 20px rgba(255, 153, 0, 0.08);
   transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .spotlight-card {
+  background: rgba(17, 24, 39, 0.85);
+  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 153, 0, 0.15);
 }
 
 .spotlight-card:hover {

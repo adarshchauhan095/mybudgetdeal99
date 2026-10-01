@@ -59,8 +59,14 @@ service cloud.firestore {
       allow create: if request.resource.data.eventType in [
         'page_view', 'product_view', 'collection_view', 'category_view',
         'search', 'filter_used', 'product_share', 'amazon_cta_click',
-        'banner_click', 'collection_product_click'
+        'banner_click', 'collection_product_click', 'app_crash', 'unhandled_error'
       ];
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Automated Crash Analytics: Client error boundaries can log crash reports
+    match /crashes/{crashId} {
+      allow create: if true;
       allow read, update, delete: if isAdmin();
     }
   }

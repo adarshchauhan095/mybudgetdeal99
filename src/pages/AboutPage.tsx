@@ -42,7 +42,7 @@ export const AboutPage: React.FC = () => {
             flexDirection: 'column',
             gap: '1.25rem'
           }}>
-            <h2 style={{ fontSize: '1.35rem', fontWeight: 700, color: '#ffffff' }}>
+            <h2 style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--text-primary)' }}>
               The Two Pillars of Our Discovery System
             </h2>
 
@@ -65,7 +65,7 @@ export const AboutPage: React.FC = () => {
             </div>
           </div>
 
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#ffffff', marginTop: '1rem' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '1rem' }}>
             Our Strict Curation Standards
           </h2>
           <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>

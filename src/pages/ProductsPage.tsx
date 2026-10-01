@@ -188,7 +188,7 @@ export const ProductsPage: React.FC = () => {
                 textAlign: 'center'
               }}>
                 <Search size={40} color="var(--text-muted)" style={{ margin: '0 auto 1rem' }} />
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem', color: '#ffffff' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
                   No matching products found
                 </h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', maxWidth: '420px', margin: '0 auto 1.5rem' }}>

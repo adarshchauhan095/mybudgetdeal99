@@ -94,7 +94,7 @@ export const ProductDetailPage: React.FC = () => {
   if (!product) {
     return (
       <div className="container" style={{ padding: '4rem 1rem', textAlign: 'center' }}>
-        <h2 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.75rem', color: '#ffffff' }}>
+        <h2 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
           Product Not Found
         </h2>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
@@ -422,7 +422,7 @@ export const ProductDetailPage: React.FC = () => {
             </div>
 
             {/* Product Title */}
-            <h1 style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1.25, color: '#ffffff' }}>
+            <h1 style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1.25, color: 'var(--text-primary)' }}>
               {product.title}
             </h1>
 
@@ -445,7 +445,7 @@ export const ProductDetailPage: React.FC = () => {
                 <p style={{
                   fontSize: '1rem',
                   lineHeight: 1.6,
-                  color: '#ffffff',
+                  color: 'var(--text-primary)',
                   fontWeight: 500
                 }}>
                   {product.hookLine}
@@ -463,7 +463,7 @@ export const ProductDetailPage: React.FC = () => {
               {product.currentPrice ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '2.4rem', fontWeight: 800, color: '#ffffff', fontFamily: 'Outfit, sans-serif' }}>
+                    <span style={{ fontSize: '2.4rem', fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'Outfit, sans-serif' }}>
                       {formatPrice(product.currentPrice, product.currency)}
                     </span>
                     {product.previousPrice && (
@@ -485,7 +485,7 @@ export const ProductDetailPage: React.FC = () => {
                   )}
                 </div>
               ) : (
-                <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff' }}>
+                <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                   Check Current Deal Price on Amazon
                 </div>
               )}
@@ -535,7 +535,7 @@ export const ProductDetailPage: React.FC = () => {
                 flexDirection: 'column',
                 gap: '0.75rem'
               }}>
-                <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#ffffff' }}>
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                   Product Details & Overview
                 </h3>
                 <p style={{
@@ -556,7 +556,7 @@ export const ProductDetailPage: React.FC = () => {
         {relatedProducts.length > 0 && (
           <section style={{ marginTop: '2rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontSize: '1.65rem', fontWeight: 800, color: '#ffffff' }}>
+              <h2 style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                 You Might Also Like
               </h2>
               <Link to={`/category/${product.categorySlug}`} className="btn btn-outline btn-sm">

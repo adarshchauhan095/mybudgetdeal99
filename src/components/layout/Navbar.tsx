@@ -10,16 +10,19 @@ import {
   FolderTree,
   ShieldCheck,
   ExternalLink,
-  Lock
+  Sun,
+  Moon
 } from 'lucide-react';
 import { useSite } from '../../context/SiteContext';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 
 export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [navSearchQuery, setNavSearchQuery] = useState('');
   const { settings } = useSite();
   const { isAdmin } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -41,7 +44,7 @@ export const Navbar: React.FC = () => {
       left: 0,
       right: 0,
       height: 'var(--nav-height)',
-      background: 'rgba(11, 15, 25, 0.88)',
+      background: 'var(--bg-glass)',
       backdropFilter: 'blur(16px)',
       WebkitBackdropFilter: 'blur(16px)',
       borderBottom: '1px solid var(--border-subtle)',
@@ -69,9 +72,7 @@ export const Navbar: React.FC = () => {
               fontWeight: 800,
               fontSize: '1.25rem',
               letterSpacing: '-0.02em',
-              background: 'linear-gradient(135deg, #ffffff 60%, #94a3b8 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              color: 'var(--text-primary)',
               display: 'block',
               lineHeight: 1.1
             }}>
@@ -140,33 +141,70 @@ export const Navbar: React.FC = () => {
             <span>Deals</span>
           </Link>
 
-          {isAdmin ? (
-            <Link to="/admin" className="btn btn-sm btn-secondary" style={{ marginLeft: '0.5rem' }}>
+          {/* Theme Toggle Button Desktop */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="theme-toggle-btn"
+            title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
+            aria-label="Toggle theme mode"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              backgroundColor: 'var(--bg-tertiary)',
+              border: '1px solid var(--border-subtle)',
+              color: theme === 'light' ? '#ea580c' : '#fbbf24',
+              cursor: 'pointer',
+              marginLeft: '0.25rem',
+              transition: 'all var(--transition-fast)'
+            }}
+          >
+            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+          </button>
+
+          {/* Admin link strictly visible ONLY when already authenticated as admin */}
+          {isAdmin && (
+            <Link to="/admin" className="btn btn-sm btn-secondary" style={{ marginLeft: '0.25rem' }}>
               <ShieldCheck size={16} color="var(--accent-green)" />
               <span>Admin</span>
-            </Link>
-          ) : (
-            <Link to="/admin" title="Admin Portal" style={{ color: 'var(--text-muted)', padding: '0.4rem', borderRadius: '6px' }}>
-              <Lock size={16} />
             </Link>
           )}
         </nav>
 
         {/* Mobile Action Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }} className="mobile-nav-toggle">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }} className="mobile-nav-toggle">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            style={{
+              color: theme === 'light' ? '#ea580c' : '#fbbf24',
+              padding: '0.45rem',
+              display: 'flex',
+              alignItems: 'center',
+              borderRadius: '50%'
+            }}
+            title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
+            aria-label="Toggle theme"
+          >
+            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+          </button>
           <button
             onClick={() => navigate('/search')}
-            style={{ color: 'var(--text-primary)', padding: '0.5rem' }}
+            style={{ color: 'var(--text-primary)', padding: '0.45rem', display: 'flex', alignItems: 'center' }}
             aria-label="Search"
           >
-            <Search size={22} />
+            <Search size={21} />
           </button>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            style={{ color: 'var(--text-primary)', padding: '0.5rem' }}
+            style={{ color: 'var(--text-primary)', padding: '0.45rem', display: 'flex', alignItems: 'center' }}
             aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
+            {mobileMenuOpen ? <X size={25} /> : <Menu size={25} />}
           </button>
         </div>
 
@@ -180,7 +218,7 @@ export const Navbar: React.FC = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'rgba(11, 15, 25, 0.98)',
+          background: 'var(--bg-primary)',
           backdropFilter: 'blur(20px)',
           padding: '1.5rem',
           display: 'flex',
@@ -271,22 +309,24 @@ export const Navbar: React.FC = () => {
               <Compass size={18} color="var(--accent-green)" />
               All Products
             </Link>
-            <Link
-              to="/admin"
-              onClick={() => setMobileMenuOpen(false)}
-              style={{
-                padding: '0.85rem 1rem',
-                borderRadius: 'var(--radius-md)',
-                background: 'rgba(255, 255, 255, 0.03)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                fontWeight: 600
-              }}
-            >
-              <ShieldCheck size={18} color="var(--accent-primary)" />
-              Admin Portal
-            </Link>
+            {isAdmin && (
+              <Link
+                to="/admin"
+                onClick={() => setMobileMenuOpen(false)}
+                style={{
+                  padding: '0.85rem 1rem',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  fontWeight: 600
+                }}
+              >
+                <ShieldCheck size={18} color="var(--accent-primary)" />
+                Admin Portal
+              </Link>
+            )}
           </div>
 
           <div style={{ marginTop: 'auto', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>

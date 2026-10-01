@@ -138,7 +138,7 @@ export const SearchPage: React.FC = () => {
         {queryParam ? (
           <div>
             <div style={{ marginBottom: '1.5rem', fontSize: '1rem', color: 'var(--text-secondary)' }}>
-              Search results for <strong style={{ color: '#ffffff' }}>"{queryParam}"</strong> (
+              Search results for <strong style={{ color: 'var(--text-primary)' }}>"{queryParam}"</strong> (
               {products.length} products{matchingCollections.length > 0 ? `, ${matchingCollections.length} setups` : ''})
             </div>
 
@@ -177,7 +177,7 @@ export const SearchPage: React.FC = () => {
                 textAlign: 'center'
               }}>
                 <Search size={40} color="var(--text-muted)" style={{ margin: '0 auto 1rem' }} />
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#ffffff', marginBottom: '0.5rem' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
                   No exact matches found for "{queryParam}"
                 </h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', maxWidth: '420px', margin: '0 auto 1.5rem' }}>

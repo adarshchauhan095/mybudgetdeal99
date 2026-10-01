@@ -41,7 +41,7 @@ export const DealsPage: React.FC = () => {
             <Flame size={18} />
             <span>Limited-Time Price Drops</span>
           </div>
-          <h1 style={{ fontSize: '2.4rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.75rem' }}>
+          <h1 style={{ fontSize: '2.4rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.75rem' }}>
             Verified Amazon Deals
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', maxWidth: '650px', marginBottom: '1.5rem' }}>
@@ -58,7 +58,7 @@ export const DealsPage: React.FC = () => {
                 borderRadius: 'var(--radius-full)',
                 fontSize: '0.85rem',
                 fontWeight: 600,
-                background: minDiscount === undefined ? '#f87171' : 'rgba(255, 255, 255, 0.05)',
+                background: minDiscount === undefined ? '#f87171' : 'var(--bg-secondary)',
                 color: minDiscount === undefined ? '#ffffff' : 'var(--text-secondary)',
                 border: '1px solid var(--border-subtle)'
               }}
@@ -74,7 +74,7 @@ export const DealsPage: React.FC = () => {
                   borderRadius: 'var(--radius-full)',
                   fontSize: '0.85rem',
                   fontWeight: 600,
-                  background: minDiscount === pct ? '#f87171' : 'rgba(255, 255, 255, 0.05)',
+                  background: minDiscount === pct ? '#f87171' : 'var(--bg-secondary)',
                   color: minDiscount === pct ? '#ffffff' : 'var(--text-secondary)',
                   border: '1px solid var(--border-subtle)'
                 }}
@@ -99,7 +99,7 @@ export const DealsPage: React.FC = () => {
         ) : (
           <div style={{ textAlign: 'center', padding: '4rem 1rem', background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)' }}>
             <Zap size={36} color="var(--text-muted)" style={{ margin: '0 auto 1rem' }} />
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#ffffff', marginBottom: '0.5rem' }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
               No deals matching this criteria
             </h3>
             <p style={{ color: 'var(--text-muted)' }}>Try selecting a lower discount threshold.</p>
@@ -108,7 +108,7 @@ export const DealsPage: React.FC = () => {
 
         {/* Disclaimer Notice */}
         <div style={{
-          background: 'rgba(255, 255, 255, 0.02)',
+          background: 'var(--bg-tertiary)',
           border: '1px solid var(--border-subtle)',
           borderRadius: 'var(--radius-md)',
           padding: '1rem',

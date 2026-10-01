@@ -75,7 +75,7 @@ export const CollectionDetailPage: React.FC = () => {
   if (!collection) {
     return (
       <div className="container" style={{ padding: '4rem 1rem', textAlign: 'center' }}>
-        <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#ffffff', marginBottom: '1rem' }}>
+        <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1rem' }}>
           Setup Not Found
         </h2>
         <Link to="/collections" className="btn btn-primary">
@@ -187,11 +187,11 @@ export const CollectionDetailPage: React.FC = () => {
                       gap: '0.75rem',
                       padding: '0.75rem',
                       borderRadius: 'var(--radius-md)',
-                      background: checkedItems[idx] ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+                      background: checkedItems[idx] ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-tertiary)',
                       border: checkedItems[idx] ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid var(--border-subtle)',
                       cursor: 'pointer',
                       fontSize: '0.88rem',
-                      color: checkedItems[idx] ? '#ffffff' : 'var(--text-secondary)',
+                      color: checkedItems[idx] ? 'var(--text-muted)' : 'var(--text-primary)',
                       textDecoration: checkedItems[idx] ? 'line-through' : 'none'
                     }}
                   >

@@ -219,7 +219,7 @@ export const HomePage: React.FC = () => {
                     <h3 style={{
                       fontSize: '0.98rem',
                       fontWeight: 700,
-                      color: '#ffffff',
+                      color: 'var(--text-primary)',
                       lineHeight: 1.35,
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
@@ -250,13 +250,13 @@ export const HomePage: React.FC = () => {
                   display: 'flex',
                   alignItems: 'baseline',
                   justifyContent: 'space-between',
-                  background: 'rgba(255, 255, 255, 0.04)',
+                  background: 'var(--bg-tertiary)',
                   padding: '0.75rem 1rem',
                   borderRadius: 'var(--radius-md)',
                   marginBottom: '1rem'
                 }}>
                   <div>
-                    <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#ffffff' }}>
+                    <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                       {formatPrice(spotlightProduct.currentPrice || 449, spotlightProduct.currency)}
                     </span>
                     {spotlightProduct.previousPrice && (
@@ -317,7 +317,7 @@ export const HomePage: React.FC = () => {
               <Layers size={20} />
             </div>
             <div>
-              <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff' }}>Curated Smart Setups</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>Curated Smart Setups</div>
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Complete matching product bundles</div>
             </div>
           </div>
@@ -327,7 +327,7 @@ export const HomePage: React.FC = () => {
               <ShieldCheck size={20} />
             </div>
             <div>
-              <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff' }}>Zero Fake Claims</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>Zero Fake Claims</div>
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Real ASINs with authentic links</div>
             </div>
           </div>
@@ -337,7 +337,7 @@ export const HomePage: React.FC = () => {
               <Zap size={20} />
             </div>
             <div>
-              <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff' }}>Verified Price Drops</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>Verified Price Drops</div>
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Daily deals up to 64% discount</div>
             </div>
           </div>
@@ -347,7 +347,7 @@ export const HomePage: React.FC = () => {
               <Truck size={20} />
             </div>
             <div>
-              <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff' }}>Amazon Direct Fulfillment</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>Amazon Direct Fulfillment</div>
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Prime delivery & trusted warranty</div>
             </div>
           </div>
@@ -570,15 +570,15 @@ export const HomePage: React.FC = () => {
               At <strong>mybudgetdeal99</strong>, we test, research, and organize items into complete functional setups (like study table kits or car essentials) so you can make informed decisions in seconds.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.88rem', color: '#ffffff' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.88rem', color: 'var(--text-primary)' }}>
                 <CheckCircle2 size={16} color="var(--accent-green)" />
                 <span>Zero fake reviews or automated price trickery</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.88rem', color: '#ffffff' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.88rem', color: 'var(--text-primary)' }}>
                 <CheckCircle2 size={16} color="var(--accent-green)" />
                 <span>Intentional, clear "View on Amazon" Special Links</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.88rem', color: '#ffffff' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.88rem', color: 'var(--text-primary)' }}>
                 <CheckCircle2 size={16} color="var(--accent-green)" />
                 <span>Full Amazon Prime customer protection & return policy applies</span>
               </div>

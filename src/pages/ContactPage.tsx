@@ -51,7 +51,7 @@ export const ContactPage: React.FC = () => {
             textAlign: 'center'
           }}>
             <CheckCircle2 size={48} color="var(--accent-green)" style={{ margin: '0 auto 1rem' }} />
-            <h3 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#ffffff', marginBottom: '0.5rem' }}>
+            <h3 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
               Thank You for Reaching Out!
             </h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
@@ -72,7 +72,7 @@ export const ContactPage: React.FC = () => {
             }}
           >
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.4rem' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.4rem' }}>
                 Your Name
               </label>
               <input
@@ -86,7 +86,7 @@ export const ContactPage: React.FC = () => {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.4rem' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.4rem' }}>
                 Email Address
               </label>
               <input
@@ -100,7 +100,7 @@ export const ContactPage: React.FC = () => {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#ffffff', marginBottom: '0.4rem' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.4rem' }}>
                 Message or Setup Suggestion
               </label>
               <textarea

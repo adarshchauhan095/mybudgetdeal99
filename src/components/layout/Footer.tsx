@@ -135,8 +135,6 @@ export const Footer: React.FC = () => {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span>Built for smart shoppers</span>
-            <span>•</span>
-            <Link to="/admin" style={{ color: 'var(--text-muted)' }}>Admin Portal</Link>
           </div>
         </div>
 

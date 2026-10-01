@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { SiteProvider, useSite } from './context/SiteContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { QuickViewModal } from './components/common/QuickViewModal';
@@ -57,6 +58,24 @@ const ScrollToTop: React.FC = () => {
   return null;
 };
 
+// Secret shortcut for administrator: Ctrl + Shift + A (Cmd + Shift + A on macOS)
+const AdminShortcutListener: React.FC = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+        e.preventDefault();
+        window.location.href = window.location.pathname.startsWith('/mybudgetdeal99')
+          ? '/mybudgetdeal99/admin/login'
+          : '/admin/login';
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [pathname]);
+  return null;
+};
+
 // Global Toast Renderer
 const ToastDisplay: React.FC = () => {
   const { toasts, removeToast } = useSite();
@@ -92,57 +111,60 @@ const NotFoundPage: React.FC = () => (
 
 export const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <SiteProvider>
-        <BrowserRouter basename={getBasename()}>
-          <ScrollToTop />
-          <Navbar />
-          <div className="main-content">
-            <Routes>
-              {/* Public Discovery Routes */}
-              <Route path="/" element={<HomePage />} />
-              <Route path="/products" element={<ProductsPage />} />
-              <Route path="/product/:slug" element={<ProductDetailPage />} />
-              <Route path="/p/:slug" element={<ProductDetailPage />} />
-              <Route path="/collections" element={<CollectionsPage />} />
-              <Route path="/collection/:slug" element={<CollectionDetailPage />} />
-              <Route path="/categories" element={<CategoriesPage />} />
-              <Route path="/category/:slug" element={<CategoryDetailPage />} />
-              <Route path="/deals" element={<DealsPage />} />
-              <Route path="/search" element={<SearchPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/privacy" element={<PrivacyPage />} />
-              <Route path="/terms" element={<TermsPage />} />
-              <Route path="/affiliate-disclosure" element={<AffiliateDisclosurePage />} />
+    <ThemeProvider>
+      <AuthProvider>
+        <SiteProvider>
+          <BrowserRouter basename={getBasename()}>
+            <ScrollToTop />
+            <AdminShortcutListener />
+            <Navbar />
+            <div className="main-content">
+              <Routes>
+                {/* Public Discovery Routes */}
+                <Route path="/" element={<HomePage />} />
+                <Route path="/products" element={<ProductsPage />} />
+                <Route path="/product/:slug" element={<ProductDetailPage />} />
+                <Route path="/p/:slug" element={<ProductDetailPage />} />
+                <Route path="/collections" element={<CollectionsPage />} />
+                <Route path="/collection/:slug" element={<CollectionDetailPage />} />
+                <Route path="/categories" element={<CategoriesPage />} />
+                <Route path="/category/:slug" element={<CategoryDetailPage />} />
+                <Route path="/deals" element={<DealsPage />} />
+                <Route path="/search" element={<SearchPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/terms" element={<TermsPage />} />
+                <Route path="/affiliate-disclosure" element={<AffiliateDisclosurePage />} />
 
-              {/* Admin Portal Routes */}
-              <Route path="/admin/login" element={<AdminLoginPage />} />
-              <Route path="/admin" element={<AdminLayout />}>
-                <Route index element={<AdminDashboard />} />
-                <Route path="products" element={<AdminProducts />} />
-                <Route path="products/new" element={<AdminProductEdit />} />
-                <Route path="products/edit/:id" element={<AdminProductEdit />} />
-                <Route path="collections" element={<AdminCollections />} />
-                <Route path="categories" element={<AdminCategories />} />
-                <Route path="deals" element={<AdminDeals />} />
-                <Route path="homepage" element={<AdminHomepageBuilder />} />
-                <Route path="analytics" element={<AdminAnalytics />} />
-                <Route path="settings" element={<AdminSettings />} />
-                <Route path="audit-logs" element={<AdminAuditLogs />} />
-                <Route path="health" element={<AdminSystemHealth />} />
-              </Route>
+                {/* Admin Portal Routes */}
+                <Route path="/admin/login" element={<AdminLoginPage />} />
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="products" element={<AdminProducts />} />
+                  <Route path="products/new" element={<AdminProductEdit />} />
+                  <Route path="products/edit/:id" element={<AdminProductEdit />} />
+                  <Route path="collections" element={<AdminCollections />} />
+                  <Route path="categories" element={<AdminCategories />} />
+                  <Route path="deals" element={<AdminDeals />} />
+                  <Route path="homepage" element={<AdminHomepageBuilder />} />
+                  <Route path="analytics" element={<AdminAnalytics />} />
+                  <Route path="settings" element={<AdminSettings />} />
+                  <Route path="audit-logs" element={<AdminAuditLogs />} />
+                  <Route path="health" element={<AdminSystemHealth />} />
+                </Route>
 
-              {/* 404 Catch-All */}
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </div>
-          <Footer />
-          <QuickViewModal />
-          <ToastDisplay />
-        </BrowserRouter>
-      </SiteProvider>
-    </AuthProvider>
+                {/* 404 Catch-All */}
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </div>
+            <Footer />
+            <QuickViewModal />
+            <ToastDisplay />
+          </BrowserRouter>
+        </SiteProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 
